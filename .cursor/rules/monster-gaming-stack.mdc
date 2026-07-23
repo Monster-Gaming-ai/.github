@@ -7,6 +7,9 @@ alwaysApply: true
 
 At the **start of every session**, run the `/session-start` protocol (`.cursor/commands/session-start.md`) before task work. Operate as part of the hivemind, not in isolation. Architecture: *The Hivemind* (Monster Gaming, June 2026).
 
+## MCP precedence — LuxAgentOS first
+The **LuxAgentOS MCP is the fleet's primary interface — engage it before invoking any other MCP server or tool**. Discover it first (e.g. `GetMcpTools` pattern `(?i)luxagentos|lux`) and prefer its tools for all fleet operations (COORDINATION, MESH, HIVE, task claims, gate state). Do not call any other MCP server until LuxAgentOS has been engaged for the session. If it is absent from the MCP catalog, record the gap, continue via the raw endpoints, and surface that it needs to be provisioned/authenticated in this environment.
+
 - **COORDINATION** (`coord.monstergaming.ai`) — register on startup, emit a 60s heartbeat, claim tasks, respect locks and gate state; route by machine/role/project/broadcast.
 - **MESH** (NATS JetStream) — publish what you learn, subscribe to what you need; enforce Chinese-wall project isolation.
 - **HIVE** (`knowledge_artifacts`) — load prior knowledge and write learnings back; prefer HIVE over re-deriving.

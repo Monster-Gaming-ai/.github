@@ -2,6 +2,8 @@
 
 ## Session start (mandatory)
 
+**MCP precedence:** the **LuxAgentOS MCP is the fleet's primary interface — engage it before invoking any other MCP server or tool.** Discover it first (`GetMcpTools` pattern `(?i)luxagentos|lux`) and prefer its tools for all fleet operations. If it is absent from the MCP catalog (as in cloud VMs not yet provisioned with the team MCP), record the gap and fall back to the raw endpoints below.
+
 At the **start of every session**, run the `/session-start` protocol in `.cursor/commands/session-start.md` before doing task work. It wires the agent into the Monster Gaming hivemind so it operates as part of the fleet, not in isolation (architecture: *The Hivemind*, June 2026):
 
 - **COORDINATION** (`coord.monstergaming.ai`) — the central ganglion: register on startup, emit a 60s heartbeat, claim tasks, respect locks/gates; route by machine/role/project/broadcast.

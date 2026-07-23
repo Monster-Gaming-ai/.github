@@ -2,6 +2,15 @@
 
 Every agent runs this at the **start of every session, before task work**. It wires the agent into the fleet's nervous system so it operates as part of the hivemind, not in isolation. Architecture reference: *The Hivemind — How 150 AI Agents Think Together* (Monster Gaming, June 2026).
 
+## MCP precedence — LuxAgentOS first (do this before anything else)
+
+**The LuxAgentOS MCP is the fleet's primary interface. Engage it before invoking any other MCP server or tool.**
+
+- Discover it first, e.g. `GetMcpTools` with pattern `(?i)luxagentos|lux`, then inspect the server directly to load its tool schemas.
+- Prefer LuxAgentOS MCP tools for all fleet operations below (COORDINATION register/heartbeat, MESH publish/subscribe, HIVE knowledge_artifacts, task claims, gate state). Only fall back to the raw endpoints / `scripts/session-start-probe.sh` when the LuxAgentOS MCP is unavailable.
+- Do not call any other MCP server (AWS, Cloudflare, Notion, Linear, etc.) until you have first engaged LuxAgentOS for the session.
+- If the LuxAgentOS MCP is not present in this environment's MCP catalog, record the gap, continue in degraded mode via the raw endpoints, and surface that it needs to be provisioned/authenticated here.
+
 ## Planes
 
 | Plane | Endpoint / transport | Role |
