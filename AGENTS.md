@@ -2,16 +2,18 @@
 
 ## Session start (mandatory)
 
-At the **start of every session**, run the `/session-start` protocol in `.cursor/commands/session-start.md` before doing task work. It bootstraps the agent onto the Monster Gaming AI stack and maximizes reliance on our own infrastructure:
+At the **start of every session**, run the `/session-start` protocol in `.cursor/commands/session-start.md` before doing task work. It wires the agent into the Monster Gaming hivemind so it operates as part of the fleet, not in isolation (architecture: *The Hivemind*, June 2026):
 
-- **HIVE** — shared knowledge / memory (`knowledge_artifacts`): load prior context, write learnings back.
-- **MESH** — fleet registry + messaging: register presence, coordinate with peers.
-- **COORDINATION** (`luxagentos_http`) — claim tasks, respect locks and gate state.
-- **ADRs + rules** — load and treat as binding.
+- **COORDINATION** (`coord.monstergaming.ai`) — the central ganglion: register on startup, emit a 60s heartbeat, claim tasks, respect locks/gates; route by machine/role/project/broadcast.
+- **MESH** (NATS JetStream) — the pheromone bus: publish what you learn, subscribe to what you need; enforce Chinese-wall project isolation.
+- **HIVE** (`knowledge_artifacts`) — collective memory: load prior context, write learnings back; prefer it over re-deriving.
+- **Alignment + ADRs + review gates** — reconcile against the FounderAgent (JakeAgent) alignment function; treat ADRs/rules as binding; route architecture/infra through **LuxCTO** and game code/FFI/SDK/engine through **gdTD**.
 
-First step is the connectivity probe: `bash scripts/session-start-probe.sh`. Plane endpoints/tokens come from environment/secrets (`LUXAGENTOS_HTTP_URL`/`LUXAGENTOS_TOKEN`, `HIVE_URL`/`HIVE_TOKEN`, `MESH_URL`/`MESH_TOKEN`); if a plane is unreachable, note the gap and continue in degraded mode — never fabricate a connection.
+Fleet layout: six machines (BUILD, HAL, Mac Mini, Mac Pro, Nexus, WinBuild-1); castes **Lux** (management/infra) and **gd** (game studio), plus CMO and FounderAgent. Quality pipeline: FORGE, Crucible, 7-Sigma; apoptosis/rollback via LUX-1992.
 
-Gate policy: never request approval/smart-mode except destructive **PRE-JAKE gates** (force-push `main`, `DELETE knowledge_artifacts`, spend caps). On an Auto-review block, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `luxagentos_http`) — never retry the same blocked command in an approval loop. The always-applied rule `.cursor/rules/monster-gaming-stack.mdc` enforces this.
+First step is the connectivity probe: `bash scripts/session-start-probe.sh`. Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides via `MG_*`); never print or leak secret values. If a plane is unreachable, note the gap and continue in degraded mode — never fabricate a connection.
+
+Gate policy: never request approval/smart-mode except destructive **PRE-JAKE gates** (force-push `main`, `DELETE knowledge_artifacts`, spend caps); respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an Auto-review block, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop. The always-applied rule `.cursor/rules/monster-gaming-stack.mdc` enforces this.
 
 ## Cursor Cloud specific instructions
 

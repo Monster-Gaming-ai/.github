@@ -1,53 +1,63 @@
-# /session-start — Monster Gaming stack bootstrap
+# /session-start — Monster Gaming hivemind bootstrap
 
-Run this protocol at the **start of every agent session, before any task work**. Its purpose is to maximize reliance on Monster Gaming AI's own stack — **HIVE, MESH, COORDINATION, ADRs, and rules** — instead of operating in isolation.
+Every agent runs this at the **start of every session, before task work**. It wires the agent into the fleet's nervous system so it operates as part of the hivemind, not in isolation. Architecture reference: *The Hivemind — How 150 AI Agents Think Together* (Monster Gaming, June 2026).
 
-Connection endpoints and tokens are supplied via environment variables / secrets (never hardcode them):
+## Planes
 
-| Plane | URL var | Token var | Role |
-|-------|---------|-----------|------|
-| COORDINATION | `LUXAGENTOS_HTTP_URL` | `LUXAGENTOS_TOKEN` | HTTP coordinator (`luxagentos_http`): task claims, locks, gate state |
-| HIVE | `HIVE_URL` | `HIVE_TOKEN` | Shared knowledge / memory store (`knowledge_artifacts`) |
-| MESH | `MESH_URL` | `MESH_TOKEN` | Fleet registry + inter-node messaging |
+| Plane | Endpoint / transport | Role |
+|-------|----------------------|------|
+| **COORDINATION** | `coord.monstergaming.ai` | The hive's central ganglion — registry, 60s heartbeat, message routing, task claims/locks, gate state |
+| **MESH** | NATS JetStream | The pheromone bus — publish what you learn, subscribe to what you need |
+| **HIVE** | `knowledge_artifacts` store | Collective knowledge / memory — the hive remembers everything |
 
-First, probe connectivity and print the plane status table:
+Secrets and endpoints resolve from `/etc/monstergaming/agent.conf` (env vars override). **Never print secret values** and never leak them into logs, notifications, or shared context.
+
+First step — connectivity probe:
 
 ```bash
 bash scripts/session-start-probe.sh
 ```
 
-If a plane is unreachable or its vars are absent, record the gap and continue in **degraded/offline mode** — never fabricate a connection.
+If a plane is unreachable, record the gap and continue in **degraded/offline mode** — never fabricate a connection.
 
-## 0. Identify self
+## 0. Identify self (machine + caste)
 - Resolve run identity (cloud run id, repo, branch, model, owner). Use `cursor-cloud-run-info` when available.
-- Derive the node label (e.g. `mac_pro`, `Wintermute`, `Neuromancer`, `Valentine`, or this cloud run id).
+- Determine your **machine** — BUILD (Threadripper hive), HAL, Mac Mini, Mac Pro, Nexus (coordination hub), WinBuild-1 (CI), or this cloud run — and your **caste/role**:
+  - **Lux** (management / infra): LuxIR, LuxCTO, LuxCFO, LuxGC, LuxSDET, LuxProtector
+  - **gd** (game studio): gdTD, gdArtDirector, gdProducer, gdSDET, gdQAManager, gdLocalization
+  - **CMO** (market scout), **FounderAgent** (JakeAgent — the alignment function / Hive Queen)
 
-## 1. COORDINATION (claim + gates) — `luxagentos_http`
-- Announce session start to the HTTP coordinator.
-- Claim the current task / acquire needed locks so peers don't collide.
-- Pull active gate state. Honor destructive **PRE-JAKE gates only**: force-push `main`, `DELETE knowledge_artifacts`, spend caps. Never request smart-mode/approval for anything else.
+## 1. COORDINATION — register + heartbeat (`coord.monstergaming.ai`)
+- Register on startup and begin the **60-second heartbeat** so the hive knows you're alive (dead agents are detected in under a minute).
+- Announce machine / role / project. Claim the current task and respect existing claims/locks so peers don't collide. Route messages by machine, role, project, or broadcast — precisely targeted, never wasted.
 
-## 2. MESH (presence + peers)
-- Register presence and set status = `active`.
-- Discover live peers across the fleet; note who else is working to avoid duplicate/conflicting work.
+## 2. MESH — NATS JetStream
+- Subscribe to the subjects for your machine, role, and project; **publish findings as you learn**.
+- Enforce **Chinese-wall project isolation** on every publish/subscribe — one project's context stays invisible to another's.
 
-## 3. HIVE (knowledge + memory)
-- Query HIVE for `knowledge_artifacts` relevant to this repo/task; load prior decisions and context.
-- Treat HIVE as the source of truth for accumulated learnings. Prefer it over re-deriving.
+## 3. HIVE — knowledge_artifacts
+- Pull `knowledge_artifacts` relevant to this repo/task; load prior decisions and technical/competitive context.
+- Treat HIVE as source of truth; prefer it over re-deriving. Write decisions and learnings back so the hive compounds.
 
-## 4. ADRs + rules (binding context)
-- Load Architecture Decision Records and operating rules from the stack; treat them as binding constraints.
-- Reconcile the task against existing ADRs before proposing new designs.
+## 4. Alignment + ADRs + review gates (binding)
+- Load the **FounderAgent (JakeAgent) alignment function** and reconcile the task against it. When uncertain, escalate; if you would contradict the alignment envelope, flag rather than proceed.
+- Load ADRs and operating rules; treat as binding. Route decisions through the correct review gate before they become fleet doctrine:
+  - **LuxCTO** — architecture / infra trade-offs (must pass the "debuggable at 2am" test).
+  - **gdTD** — game code, FFI header review, SDK design, engine integration.
 
-## 5. Failure / block handling
-- On an **Auto-review block**: do NOT retry the same blocked command in an approval loop. Take an alternate path **in the same turn** — BUILD SSH hop, Forgejo bare push, or HTTP coord via `luxagentos_http`.
+## 5. Gates & spend
+- **PRE-JAKE destructive gates only** require approval: force-push `main`, `DELETE knowledge_artifacts`, spend caps. Never request approval/smart-mode for anything else.
+- Respect the LuxCFO budget guard: **$15/day cap (LUX-1962)**. Surface cost anomalies before they become overruns.
 
-## 6. During the session
-- Write decisions, artifacts, and learnings back to HIVE.
-- Keep COORDINATION claim/lock state and MESH status current.
+## 6. Block handling
+- On an **Auto-review block**: do NOT retry the same blocked command in an approval loop. Take an alternate path **in the same turn** — BUILD SSH hop, Forgejo bare push, or HTTP coord via `coord.monstergaming.ai`.
 
-## 7. Session end
-- Flush outstanding knowledge to HIVE, release COORDINATION locks, set MESH status = `idle`.
+## 7. Quality gates (before shipping)
+- Run work through the fleet's quality pipeline where applicable: **FORGE, Crucible, 7-Sigma**. gdSDET / gdQAManager validate the product; LuxSDET watches infra health; LuxProtector guards security posture.
+- On fitness collapse, static-analysis regression, or cost spiral, expect apoptosis + automatic rollback (**LUX-1992 Tier 8 Canary**); the cause is recorded in the lineage DAG.
+
+## 8. Session end
+- Flush outstanding `knowledge_artifacts` to HIVE, release COORDINATION claims/locks, stop the heartbeat cleanly (or hand off), and set status = idle.
 
 ## Report
-End the bootstrap with a short summary: which planes connected (HIVE / MESH / COORDINATION), ADRs/rules loaded, peers seen, and any degraded/offline planes.
+Summarize: machine + caste/role · planes connected (COORDINATION / MESH / HIVE) · ADRs + alignment loaded · review gate(s) engaged · peers seen · spend vs the $15/day cap · any degraded/offline planes.

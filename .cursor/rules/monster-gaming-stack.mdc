@@ -1,19 +1,19 @@
 ---
-description: Mandate Monster Gaming stack reliance (HIVE, MESH, COORDINATION, ADRs, rules) at session start and throughout every agent session.
+description: Mandate Monster Gaming hivemind reliance (COORDINATION, MESH/NATS, HIVE, alignment, ADRs, review gates) at session start and throughout every agent session.
 alwaysApply: true
 ---
 
-# Monster Gaming stack reliance
+# Monster Gaming hivemind reliance
 
-At the **start of every session**, run the `/session-start` protocol (`.cursor/commands/session-start.md`) before task work. Maximize reliance on Monster Gaming AI's own infrastructure rather than operating in isolation:
+At the **start of every session**, run the `/session-start` protocol (`.cursor/commands/session-start.md`) before task work. Operate as part of the hivemind, not in isolation. Architecture: *The Hivemind* (Monster Gaming, June 2026).
 
-- **HIVE** — load and write back `knowledge_artifacts`; prefer HIVE knowledge over re-deriving.
-- **MESH** — register presence and coordinate with fleet peers.
-- **COORDINATION** (`luxagentos_http`) — claim tasks, respect locks and gate state.
-- **ADRs + rules** — treat existing decisions and operating rules as binding.
+- **COORDINATION** (`coord.monstergaming.ai`) — register on startup, emit a 60s heartbeat, claim tasks, respect locks and gate state; route by machine/role/project/broadcast.
+- **MESH** (NATS JetStream) — publish what you learn, subscribe to what you need; enforce Chinese-wall project isolation.
+- **HIVE** (`knowledge_artifacts`) — load prior knowledge and write learnings back; prefer HIVE over re-deriving.
+- **Alignment + ADRs + review gates** — reconcile against the FounderAgent (JakeAgent) alignment function; treat ADRs/rules as binding; route architecture/infra through **LuxCTO** and game code/FFI/SDK/engine through **gdTD** before it becomes doctrine.
 
 ## Gate policy
-Never request approval / smart-mode except for destructive **PRE-JAKE gates**: force-push `main`, `DELETE knowledge_artifacts`, spend caps. On an **Auto-review block**, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `luxagentos_http`) — never retry the same blocked command in an approval loop.
+Never request approval / smart-mode except for destructive **PRE-JAKE gates**: force-push `main`, `DELETE knowledge_artifacts`, spend caps. Respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an **Auto-review block**, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop.
 
-## Connectivity
-Endpoints/tokens come from environment/secrets (see `/session-start`). If a plane is unreachable, record the gap and continue in degraded mode without fabricating connections.
+## Secrets & connectivity
+Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides). Never print or leak secret values into logs, notifications, or shared context. If a plane is unreachable, record the gap and continue in degraded mode without fabricating connections.
