@@ -15,6 +15,8 @@ Fleet layout: six machines (BUILD, HAL, Mac Mini, Mac Pro, Nexus, WinBuild-1); c
 
 First step is the connectivity probe: `bash scripts/session-start-probe.sh`. Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides via `MG_*`); never print or leak secret values. If a plane is unreachable, note the gap and continue in degraded mode — never fabricate a connection.
 
+Provider policy: **OpenRouter is deprecated in our stack** — route model calls direct to providers (and local/self-hosted models), never through OpenRouter; do not reintroduce it in any gateway/router/config.
+
 Gate policy: never request approval/smart-mode except destructive **PRE-JAKE gates** (force-push `main`, `DELETE knowledge_artifacts`, spend caps); respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an Auto-review block, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop. The always-applied rule `.cursor/rules/monster-gaming-stack.mdc` enforces this.
 
 ## Cursor Cloud specific instructions
