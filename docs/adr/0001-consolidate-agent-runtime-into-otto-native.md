@@ -49,6 +49,9 @@ deterministic, replace the LLM call with **native code** ("metabolism → Native
 2. **OTTO_SERVER (OpenAI-compatible gateway)** — routing, **prompt caching**, context compression,
    shadow-model comparison. Reserve frontier models for hard steps; route cheap/local models for
    triage, classification, formatting.
+   - **Provider policy: OpenRouter is deprecated in our stack.** The gateway routes **direct to
+     providers** (and to local/self-hosted models), never through OpenRouter. Any routing config,
+     benchmark, or migration must not reintroduce an OpenRouter dependency.
 3. **Native tool ABI** — replace per-turn MCP schema serialization with compiled in-process tools or
    a local tool daemon (Unix socket / gRPC). Tools cost ~0 context until invoked.
 4. **A2A over NATS JetStream (MESH)** — real inter-agent messaging in our own network, replacing
