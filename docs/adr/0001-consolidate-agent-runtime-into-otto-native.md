@@ -16,7 +16,7 @@ context dominates spend.
 
 > Naming: the **Loki** code name is being retired in favor of **Otto** (they are interchangeable
 > during the transition; prefer "Otto" going forward). "Otto Software and Tools" is registered with
-> the USPTO.
+> the USPTO under Monster Gaming AI, Inc.
 
 We do **not** want to build infrastructure around Cursor. We want the runtime to be **OTTO**
 (`OTTO_SERVER` / `OTTO_CLIENT`) — our own harness, gateway, and sandbox — so we control the context
