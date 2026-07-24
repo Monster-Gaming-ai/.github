@@ -15,7 +15,9 @@ Fleet layout: six machines (BUILD, HAL, Mac Mini, Mac Pro, Nexus, WinBuild-1); c
 
 First step is the connectivity probe: `bash scripts/session-start-probe.sh`. Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides via `MG_*`); never print or leak secret values. If a plane is unreachable, note the gap and continue in degraded mode — never fabricate a connection.
 
-Provider policy: model routing goes through **our own router, OttoRouter** (part of OTTO_SERVER), to providers and local/self-hosted models. **OpenRouter is deprecated** — OttoRouter replaces it; do not reintroduce OpenRouter in any gateway/router/config.
+Naming: the **Loki** code name is being retired in favor of **Otto** (interchangeable during the transition; prefer "Otto" in new work). "Otto Software and Tools" is registered with the USPTO.
+
+Provider policy: model routing goes through **our own router, OttoRouter** (part of OTTO_SERVER; reuses proven components like the **neutron** gateway). **OpenRouter is deprecated** — OttoRouter replaces it; do not reintroduce OpenRouter in any gateway/router/config.
 
 Gate policy: never request approval/smart-mode except destructive **PRE-JAKE gates** (force-push `main`, `DELETE knowledge_artifacts`, spend caps); respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an Auto-review block, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop. The always-applied rule `.cursor/rules/monster-gaming-stack.mdc` enforces this.
 
