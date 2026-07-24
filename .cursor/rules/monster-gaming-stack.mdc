@@ -1,0 +1,28 @@
+---
+description: Mandate Monster Gaming hivemind reliance (COORDINATION, MESH/NATS, HIVE, alignment, ADRs, review gates) at session start and throughout every agent session.
+alwaysApply: true
+---
+
+# Monster Gaming hivemind reliance
+
+At the **start of every session**, run the `/session-start` protocol (`.cursor/commands/session-start.md`) before task work. Operate as part of the hivemind, not in isolation. Architecture: *The Hivemind* (Monster Gaming, June 2026).
+
+## MCP precedence — LuxAgentOS first
+The **LuxAgentOS MCP is the fleet's primary interface — engage it before invoking any other MCP server or tool**. Discover it first (e.g. `GetMcpTools` pattern `(?i)luxagentos|lux`) and prefer its tools for all fleet operations (COORDINATION, MESH, HIVE, task claims, gate state). Do not call any other MCP server until LuxAgentOS has been engaged for the session. If it is absent from the MCP catalog, record the gap, continue via the raw endpoints, and surface that it needs to be provisioned/authenticated in this environment.
+
+- **COORDINATION** (`coord.monstergaming.ai`) — register on startup, emit a 60s heartbeat, claim tasks, respect locks and gate state; route by machine/role/project/broadcast.
+- **MESH** (NATS JetStream) — publish what you learn, subscribe to what you need; enforce Chinese-wall project isolation.
+- **HIVE** (`knowledge_artifacts`) — load prior knowledge and write learnings back; prefer HIVE over re-deriving.
+- **Alignment + ADRs + review gates** — reconcile against the FounderAgent (JakeAgent) alignment function; treat ADRs/rules as binding; route architecture/infra through **LuxCTO** and game code/FFI/SDK/engine through **gdTD** before it becomes doctrine.
+
+## Gate policy
+Never request approval / smart-mode except for destructive **PRE-JAKE gates**: force-push `main`, `DELETE knowledge_artifacts`, spend caps. Respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an **Auto-review block**, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop.
+
+## Naming
+**LOKI** is the code name and **OTTO** is the product name — they are **interchangeable** (either is acceptable). "Otto Software and Tools" is registered with the USPTO under **Monster Gaming AI, Inc.**
+
+## Provider policy
+Model routing goes through **our own router, OttoRouter** (part of OTTO_SERVER), to providers and local/self-hosted models. OttoRouter is one part of a larger whole and reuses proven components already working/tested in our stack (the **neutron** gateway, etc.). **OpenRouter is deprecated** and OttoRouter replaces it — do not add, recommend, or reintroduce an OpenRouter dependency in any gateway, router, config, or benchmark.
+
+## Secrets & connectivity
+Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides). Never print or leak secret values into logs, notifications, or shared context. If a plane is unreachable, record the gap and continue in degraded mode without fabricating connections.
