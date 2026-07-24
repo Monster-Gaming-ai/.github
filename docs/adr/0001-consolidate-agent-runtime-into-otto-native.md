@@ -11,12 +11,12 @@ The fleet is burning **~1.2B tokens/day**. A large share of that is not "thinkin
 **orchestration overhead** that a hosted agent harness (Cursor/Claude/Gemini/Copilot-style)
 re-pays on every turn: a large fixed system prompt, the full MCP tool-schema set, the skills/rules
 catalog, `AGENTS.md`, and re-injected file/context payloads. Multiplied across 150+ agents running
-continuously (the Otto-Code-Canary "metabolism"; formerly code-named Loki), the fixed per-turn
-context dominates spend.
+continuously (the Otto-Code-Canary / Loki-Code-Canary "metabolism"), the fixed per-turn context
+dominates spend.
 
-> Naming: the **Loki** code name is being retired in favor of **Otto** (they are interchangeable
-> during the transition; prefer "Otto" going forward). "Otto Software and Tools" is registered with
-> the USPTO under Monster Gaming AI, Inc.
+> Naming: **LOKI** is the code name and **OTTO** is the product name — they are **interchangeable**
+> (either is acceptable). "Otto Software and Tools" is registered with the USPTO under Monster Gaming
+> AI, Inc.
 
 We do **not** want to build infrastructure around Cursor. We want the runtime to be **OTTO**
 (`OTTO_SERVER` / `OTTO_CLIENT`) — our own harness, gateway, and sandbox — so we control the context
