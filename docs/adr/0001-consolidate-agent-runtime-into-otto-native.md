@@ -11,7 +11,12 @@ The fleet is burning **~1.2B tokens/day**. A large share of that is not "thinkin
 **orchestration overhead** that a hosted agent harness (Cursor/Claude/Gemini/Copilot-style)
 re-pays on every turn: a large fixed system prompt, the full MCP tool-schema set, the skills/rules
 catalog, `AGENTS.md`, and re-injected file/context payloads. Multiplied across 150+ agents running
-continuously (the Loki-Code-Canary "metabolism"), the fixed per-turn context dominates spend.
+continuously (the Otto-Code-Canary "metabolism"; formerly code-named Loki), the fixed per-turn
+context dominates spend.
+
+> Naming: the **Loki** code name is being retired in favor of **Otto** (they are interchangeable
+> during the transition; prefer "Otto" going forward). "Otto Software and Tools" is registered with
+> the USPTO.
 
 We do **not** want to build infrastructure around Cursor. We want the runtime to be **OTTO**
 (`OTTO_SERVER` / `OTTO_CLIENT`) — our own harness, gateway, and sandbox — so we control the context
@@ -49,6 +54,9 @@ deterministic, replace the LLM call with **native code** ("metabolism → Native
 2. **OTTO_SERVER (OpenAI-compatible gateway)** — routing via **OttoRouter (our own router)**,
    **prompt caching**, context compression, shadow-model comparison. Reserve frontier models for
    hard steps; route cheap/local models for triage, classification, formatting.
+   - OttoRouter is **one part of a larger whole** and is built on what is already working and tested
+     in our stack (the **neutron** gateway, etc.) — reuse those proven components rather than
+     rebuilding.
    - **Provider policy: routing goes through OttoRouter**, which routes to providers and
      local/self-hosted models. **OpenRouter is deprecated and OttoRouter replaces it** — any routing
      config, benchmark, or migration must not reintroduce an OpenRouter dependency.
