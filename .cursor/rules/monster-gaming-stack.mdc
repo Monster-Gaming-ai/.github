@@ -19,7 +19,7 @@ The **LuxAgentOS MCP is the fleet's primary interface — engage it before invok
 Never request approval / smart-mode except for destructive **PRE-JAKE gates**: force-push `main`, `DELETE knowledge_artifacts`, spend caps. Respect the LuxCFO budget guard (**$15/day, LUX-1962**). On an **Auto-review block**, take an alternate path in the same turn (BUILD SSH hop, Forgejo bare push, HTTP coord via `coord.monstergaming.ai`) — never retry the same blocked command in an approval loop.
 
 ## Naming
-The **Loki** code name is being retired in favor of **Otto** — they are interchangeable during the transition; **prefer "Otto"** in new work and phase out "Loki". "Otto Software and Tools" is registered with the USPTO.
+The **Loki** code name is being retired in favor of **Otto** — they are interchangeable during the transition; **prefer "Otto"** in new work and phase out "Loki". "Otto Software and Tools" is registered with the USPTO under **Monster Gaming AI, Inc.**
 
 ## Provider policy
 Model routing goes through **our own router, OttoRouter** (part of OTTO_SERVER), to providers and local/self-hosted models. OttoRouter is one part of a larger whole and reuses proven components already working/tested in our stack (the **neutron** gateway, etc.). **OpenRouter is deprecated** and OttoRouter replaces it — do not add, recommend, or reintroduce an OpenRouter dependency in any gateway, router, config, or benchmark.

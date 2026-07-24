@@ -15,7 +15,7 @@ Fleet layout: six machines (BUILD, HAL, Mac Mini, Mac Pro, Nexus, WinBuild-1); c
 
 First step is the connectivity probe: `bash scripts/session-start-probe.sh`. Endpoints/tokens resolve from `/etc/monstergaming/agent.conf` (env overrides via `MG_*`); never print or leak secret values. If a plane is unreachable, note the gap and continue in degraded mode — never fabricate a connection.
 
-Naming: the **Loki** code name is being retired in favor of **Otto** (interchangeable during the transition; prefer "Otto" in new work). "Otto Software and Tools" is registered with the USPTO.
+Naming: the **Loki** code name is being retired in favor of **Otto** (interchangeable during the transition; prefer "Otto" in new work). "Otto Software and Tools" is registered with the USPTO under **Monster Gaming AI, Inc.**
 
 Provider policy: model routing goes through **our own router, OttoRouter** (part of OTTO_SERVER; reuses proven components like the **neutron** gateway). **OpenRouter is deprecated** — OttoRouter replaces it; do not reintroduce OpenRouter in any gateway/router/config.
 
