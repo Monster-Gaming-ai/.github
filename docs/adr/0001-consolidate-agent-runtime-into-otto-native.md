@@ -46,12 +46,12 @@ deterministic, replace the LLM call with **native code** ("metabolism → Native
 1. **OTTO_CLIENT (harness/binary)** — owns context assembly, tool dispatch, and the turn loop.
    Minimal static system prompt; **lazy-load tool schemas**; prune the skills/rules catalog to the
    task; retrieve context **by reference** from HIVE instead of re-injecting.
-2. **OTTO_SERVER (OpenAI-compatible gateway)** — routing, **prompt caching**, context compression,
-   shadow-model comparison. Reserve frontier models for hard steps; route cheap/local models for
-   triage, classification, formatting.
-   - **Provider policy: OpenRouter is deprecated in our stack.** The gateway routes **direct to
-     providers** (and to local/self-hosted models), never through OpenRouter. Any routing config,
-     benchmark, or migration must not reintroduce an OpenRouter dependency.
+2. **OTTO_SERVER (OpenAI-compatible gateway)** — routing via **OttoRouter (our own router)**,
+   **prompt caching**, context compression, shadow-model comparison. Reserve frontier models for
+   hard steps; route cheap/local models for triage, classification, formatting.
+   - **Provider policy: routing goes through OttoRouter**, which routes to providers and
+     local/self-hosted models. **OpenRouter is deprecated and OttoRouter replaces it** — any routing
+     config, benchmark, or migration must not reintroduce an OpenRouter dependency.
 3. **Native tool ABI** — replace per-turn MCP schema serialization with compiled in-process tools or
    a local tool daemon (Unix socket / gRPC). Tools cost ~0 context until invoked.
 4. **A2A over NATS JetStream (MESH)** — real inter-agent messaging in our own network, replacing
@@ -69,7 +69,7 @@ deterministic, replace the LLM call with **native code** ("metabolism → Native
 | MCP tool schemas (all servers, every turn) | Native tool ABI / local tool daemon | Load tool defs only on use |
 | Skills/rules/AGENTS.md catalog in-context | Retrieve-by-reference from HIVE | Stop re-injecting static docs |
 | Subagent/Task fan-out | NATS (MESH) A2A + shared HIVE context | Share context by ref, not by copy |
-| Model selection (frontier by default) | `OTTO_SERVER` router + shadow eval | Cheap/local models for easy steps |
+| Model selection (frontier by default) | `OTTO_SERVER` via **OttoRouter** + shadow eval | Cheap/local models for easy steps |
 | Repeated system/tool context | `OTTO_SERVER` prompt caching | Pay ~cache-read, not full re-encode |
 | Auto-review/approval retry loops | Native gate policy in harness | Kill wasted re-sends |
 | Hosted sandbox (Override VM) | Self-hosted sandbox VM | Control env/egress/MCP/A2A |
