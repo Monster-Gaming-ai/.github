@@ -43,7 +43,9 @@ blocked TODO items with concrete unblocks rather than pretended-complete.
 - **Castes:** Lux (LuxIR, LuxCTO, LuxCFO, LuxGC, LuxSDET, LuxProtector), gd (gdTD, gdArtDirector,
   gdProducer, gdSDET, gdQAManager, gdLocalization), plus CMO and FounderAgent (JakeAgent = Hive Queen).
 - **Review gates:** LuxCTO (architecture/infra), gdTD (game code / FFI / SDK / engine).
-- **Spend guard:** LuxCFO **$15/day cap (LUX-1962)**.
+- **Spend guard:** LuxCFO **$15/day cap (LUX-1962)** — note this does **not** reconcile with a
+  1.2B tokens/day fleet-wide spend, so it is presumably **per-agent or stale**; scope needs
+  confirmation (see Open questions).
 - **Quality pipeline:** FORGE, Crucible, 7-Sigma. **Rollback/apoptosis:** LUX-1992 Tier 8 Canary +
   lineage DAG. **Metabolism:** Otto-Code-Canary / Loki-Code-Canary (continuous evolution).
 - **Secrets:** live in `/etc/monstergaming/agent.conf`; never print/leak.
@@ -80,6 +82,10 @@ path** to control env vars, egress, MCP, and A2A.
 ### PR #1 — `cursor/setup-dev-environment-fb4a` — Session bootstrap + policy
 Files: `AGENTS.md`, `.cursor/commands/session-start.md`, `.cursor/rules/monster-gaming-stack.mdc`,
 `scripts/session-start-probe.sh`.
+
+> **Cross-branch note:** these four files live on the **unmerged PR #1 branch**, not on the branch
+> carrying this archive (PR #3). References to them here are accurate only once PR #1 is merged; a
+> reader on the PR #3 branch alone will not find them. Merge PR #1 to make this doc fully canonical.
 
 | Commit | Summary |
 |--------|---------|
@@ -123,24 +129,71 @@ Files: `docs/adr/0001-consolidate-agent-runtime-into-otto-native.md`, this file.
 
 Legend: [x] done · [~] partial/offline-only · [ ] todo/blocked
 
+**Sequencing correction (from review):** measure before you build. Token-attribution + observability
+are **gating prerequisites** — do not commit the OTTO_SERVER/OTTO_CLIENT/native-code builds until the
+"fixed context dominates" thesis is confirmed with real numbers.
+
 - [x] T0. Establish agent operating policy in-repo (bootstrap, rule, AGENTS.md) — PR #1.
 - [x] T1. Record OTTO migration determination — ADR 0001 (PR #3).
-- [ ] T2. **Self-hosted sandbox VM** image + egress to `coord.monstergaming.ai` / NATS / HIVE, with
-  our env vars. (unblocks B1, B3) — highest structural priority.
-- [ ] T3. **Attach LuxAgentOS MCP** to the runtime the fleet actually uses (not Cursor desktop). (B2)
-- [ ] T4. **`OTTO_SERVER` gateway** with **OttoRouter** (reusing neutron), **prompt caching**, and
-  routing (frontier only for hard steps; cheap/local otherwise). Biggest $/token win. (needs B5)
-- [ ] T5. **`OTTO_CLIENT` harness** — lazy tool-schema loading, HIVE-by-reference context, minimal
-  system prompt. (needs B5)
-- [ ] T6. **NATS (MESH) A2A** to replace hosted subagent fan-out. (needs B5, T2)
-- [ ] T7. Move deterministic steps (lint/format/git/health/schema) to **native code**, retire those
-  LLM calls. ("metabolism → Native Code")
-- [ ] T8. **Token-attribution** of the 1.2B/day (fixed context vs reasoning vs retries, by caste/
-  niche) to order T4–T7. (B6)
-- [ ] T9. Instrument tokens/turn before vs after each migration step; feed the fitness function;
-  wire rollback via the LUX-1992 pattern.
-- [ ] T10. Once HIVE reachable, fold Neuromancer's **July Hivemind** architecture back into ADR 0001,
+- [ ] T2. **Token-attribution of the 1.2B/day** (fixed context vs reasoning vs retries, by caste/
+  niche) + real **$/day baseline** and target %. **GATES T5–T8.** (B6)
+- [ ] T3. **Observability stack** — per-turn token accounting schema, cost-by-caste/project,
+  transcript/audit capture, SLOs/alerts. Prerequisite for the fitness function, not a trailing step.
+- [ ] T4. **Self-hosted sandbox VM** image + egress to `coord.monstergaming.ai` / NATS / HIVE, our
+  env vars, plus a **threat model** for a compromised agent with direct fleet reach and enforced
+  (not asserted) Chinese-wall isolation. (unblocks B1, B3)
+- [ ] T5. **`OTTO_SERVER` gateway** with **OttoRouter** (reusing neutron): **prompt caching** (model
+  hit-rate/write-cost, not "assume cache-read"), routing, **HA/failover + circuit-breaking +
+  rate-limit handling** (OpenRouter provided these — OttoRouter must not be a fleet-wide SPOF).
+  (needs B5, T2)
+- [ ] T6. **`OTTO_CLIENT` harness** — lazy tool-schema loading, HIVE-by-reference context, minimal
+  system prompt; cross-platform build/sign/auto-update for Linux + macOS + Windows machines. (needs B5)
+- [ ] T7. **NATS (MESH) A2A** to replace hosted subagent fan-out. (needs B5, T4)
+- [ ] T8. Move deterministic steps (lint/format/git/health/schema) to **native code**, retire those
+  LLM calls, gating each on FORGE/Crucible/7-Sigma quality thresholds. ("metabolism → Native Code")
+- [ ] T9. **Runtime rollback / kill-switch** — per-step revert from OTTO_CLIENT/OTTO_SERVER back to
+  the hosted harness, dual-run/canary path, fleet-wide kill-switch (distinct from LUX-1992 lineage
+  apoptosis, which is agent-fitness, not runtime-infra).
+- [ ] T10. **Shadow migration** — run a small % of agents/turns on OTTO vs hosted, compare cost *and*
+  output quality with explicit per-step accept/exit criteria before expanding.
+- [ ] T11. Reconcile **native tool ABI vs "LuxAgentOS MCP first"** — how LuxAgentOS fits or is
+  replaced when per-turn MCP schemas are removed; secure the tool daemon (authz over socket/gRPC).
+- [ ] T12. Attach **LuxAgentOS MCP** to the runtime the fleet actually uses (not Cursor desktop). (B2)
+- [ ] T13. Once HIVE reachable, fold Neuromancer's **July Hivemind** architecture back into ADR 0001,
   the `/session-start` bootstrap, and this plan. (B4)
+
+### Interim, independently-shippable (not blocked on external unblocks)
+- [ ] I1. Prompt-caching + routing prototype against a **stub** provider to measure cache economics.
+- [ ] I2. Per-turn token-accounting schema + a local harness to log it (ready for real telemetry).
+- [ ] I3. Secrets design: least-privilege per-agent/caste scoping + rotation + managed store (replace
+  the flat `/etc/monstergaming/agent.conf` blast radius).
+
+## 7a. Risks & required safeguards (from external review)
+
+- **Cost thesis unproven** → gate all builds on T2 attribution; state per-lever expected savings.
+- **Own-vs-hosted break-even** → add a cost-of-ownership model (harness reliability, provider
+  failover, sandbox security, local-GPU capex on the dual-3090 BUILD box) vs projected savings.
+- **Security regression** → self-hosting removes Cursor's egress-locked, non-peer-addressable
+  sandbox; add the T4 threat model + enforced isolation before granting direct fleet reach.
+- **Secrets blast radius** → I3 (scoping/rotation/managed store).
+- **OttoRouter SPOF** → T5 HA/failover; evidence neutron handles fleet-scale failover.
+- **Runtime rollback gap** → T9 kill-switch + dual-run.
+- **Quality drift from cheap/local routing** → tie routing to FORGE/Crucible/7-Sigma thresholds
+  with auto-rollback.
+- **Residual sovereignty caveat** → OTTO still depends on external frontier APIs and *their*
+  caching semantics/TTLs; state this explicitly.
+
+## 7b. Governance & cadence (durable practices to honor)
+
+- **Learn → Teach → Evolve** and **Enrich → Explore → Enhance**: each session ingests fleet
+  knowledge, writes learnings back (HIVE / this archive / A2A outbox), and improves the plan.
+- **Agent reviews, external:internal ratio favoring externals** — decisions/plans get multi-
+  perspective agent review before shipping. *(This turn applied one external review pass; full
+  external-majority panels require fleet reviewers — fleet-gated.)*
+- **Trust Substrate** and **Fibonacci Panels** — honor as governance constructs; **specs needed**
+  from the fleet to apply precisely rather than approximate (see Open questions / A2A asks).
+- **Loop until diminishing returns** — iterate review→enrich cycles; stop when further real progress
+  requires blocked infra (OTTO repos, fleet reach, telemetry) rather than spinning no-op loops.
 
 ## 8. Consolidated actions required of the operator
 
@@ -152,9 +205,18 @@ Legend: [x] done · [~] partial/offline-only · [ ] todo/blocked
 6. (If any Cursor cloud work continues) allowlist `coord.monstergaming.ai` + fleet hosts and add the
    agent config/secrets.
 
+## 8a. Open questions (need fleet answers)
+
+- Real $/day baseline + target reduction %; scope of the LUX-1962 $15/day cap (per-agent vs fleet).
+- Token-attribution breakdown of the 1.2B/day (fixed context vs reasoning vs retries, by caste/niche).
+- Specs for **Trust Substrate** and **Fibonacci Panels**, and the intended external:internal
+  agent-review ratio.
+- OTTO_SERVER / OTTO_CLIENT / **neutron** repo access; NATS subject scheme; HIVE `knowledge_artifacts` API.
+
 ## 9. Pointers
 
 - ADR: `docs/adr/0001-consolidate-agent-runtime-into-otto-native.md`
+- A2A outbox (GitHub-brokered → HIVE/mac-pro/OTTO): `docs/otto/a2a/`
 - Bootstrap: `.cursor/commands/session-start.md` · Rule: `.cursor/rules/monster-gaming-stack.mdc`
-- Probe: `scripts/session-start-probe.sh` · Agent guide: `AGENTS.md`
+  · Probe: `scripts/session-start-probe.sh` · Agent guide: `AGENTS.md` *(all on unmerged PR #1)*
 - PRs: #1 (session bootstrap + policy), #3 (ADR + this archive)

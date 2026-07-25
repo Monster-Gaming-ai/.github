@@ -100,6 +100,17 @@ deterministic, replace the LLM call with **native code** ("metabolism → Native
   that Cursor currently handles. Needs its own observability and rollback (reuse LUX-1992 pattern).
 - **Interop:** Cursor can remain a *human* IDE surface; it just stops being the *fleet* runtime.
 
+### Required safeguards (do not skip)
+The cost thesis ("fixed context dominates") is **unproven until token-attribution runs** — gate the
+OTTO_SERVER/OTTO_CLIENT/native-code builds on it and record a real $/day baseline + target %. The
+migration must also ship: a **security threat model** for self-hosted agents with direct fleet reach
+(self-hosting removes Cursor's egress-locked sandbox), **least-privilege/rotated secrets** (not a flat
+`agent.conf`), **OttoRouter HA/failover** (it replaces OpenRouter's battle-tested failover and must
+not be a fleet-wide SPOF), a **runtime rollback/kill-switch + shadow migration** (distinct from
+LUX-1992 lineage apoptosis), and an **observability stack** as a prerequisite for the fitness
+function. Residual sovereignty caveat: OTTO still depends on external frontier APIs and their caching
+semantics. Detailed list: `docs/otto/CANONICAL_PLAN_AND_ARCHIVE.md` §7a.
+
 ## Open questions / needed inputs
 
 - Access to the OTTO_SERVER / OTTO_CLIENT repos and current NATS subject scheme (not in this repo).
