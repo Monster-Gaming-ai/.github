@@ -83,3 +83,17 @@ def test_bug_report_template_targets_reproduction_workflow():
     assert "environment" in fields_by_id
     assert fields_by_id["version"]["type"] == "input"
     assert fields_by_id["environment"]["type"] == "input"
+
+
+@pytest.mark.parametrize("filename", TEMPLATE_FILES.keys())
+def test_issue_template_field_ids_are_unique(filename):
+    template = _load_template(filename)
+    field_ids = [field["id"] for field in template["body"]]
+
+    duplicates = sorted({field_id for field_id in field_ids if field_ids.count(field_id) > 1})
+    assert not duplicates, f"duplicate field ids break GitHub forms: {duplicates}"
+
+
+def test_issue_template_directory_has_expected_templates():
+    present = {path.name for path in ISSUE_TEMPLATE_DIR.glob("*.yml")}
+    assert present == set(TEMPLATE_FILES.keys())
