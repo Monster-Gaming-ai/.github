@@ -18,6 +18,7 @@ def test_license_is_apache_2():
 
     assert "Apache License" in license_text
     assert "Version 2.0" in license_text
+    assert "Copyright 2026 Luxedeum, LLC d/b/a Monster Gaming" in license_text
 
 
 def test_pull_request_template_has_release_checklist():

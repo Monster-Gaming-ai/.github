@@ -81,5 +81,22 @@ def test_bug_report_template_targets_reproduction_workflow():
 
     assert "version" in fields_by_id
     assert "environment" in fields_by_id
+    assert "expected" in fields_by_id
     assert fields_by_id["version"]["type"] == "input"
     assert fields_by_id["environment"]["type"] == "input"
+    assert fields_by_id["expected"]["type"] == "textarea"
+
+
+@pytest.mark.parametrize("filename", TEMPLATE_FILES.keys())
+def test_issue_template_field_ids_are_unique(filename):
+    template = _load_template(filename)
+    field_ids = [field["id"] for field in template["body"]]
+    assert len(field_ids) == len(set(field_ids)), "duplicate field ids break GitHub issue forms"
+
+
+def test_feature_request_template_includes_alternatives_field():
+    template = _load_template("feature_request.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    assert "alternatives" in fields_by_id
+    assert fields_by_id["alternatives"]["type"] == "textarea"

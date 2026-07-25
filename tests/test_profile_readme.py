@@ -28,6 +28,18 @@ RECENT_PROFILE_CLAIMS = (
     "newsletter/",
 )
 
+PRODUCT_OFFERINGS = (
+    "[Monster-GPT]",
+    "[OpenAI-compatible API]",
+    "Engine-aware code generation",
+)
+
+SUPPORTED_ENGINES = (
+    "Unreal Engine",
+    "Unity",
+    "Godot",
+)
+
 LINKED_RESOURCES = (
     "https://monstergaming.ai",
     "https://monstergaming.ai/pricing",
@@ -51,6 +63,16 @@ def test_profile_readme_has_required_sections(profile_text):
 def test_profile_readme_preserves_recent_marketing_claims(profile_text):
     for claim in RECENT_PROFILE_CLAIMS:
         assert claim in profile_text, f"missing recently added profile claim: {claim}"
+
+
+def test_profile_readme_documents_core_product_offerings(profile_text):
+    for offering in PRODUCT_OFFERINGS:
+        assert offering in profile_text, f"missing core product offering: {offering}"
+
+
+def test_profile_readme_lists_supported_game_engines(profile_text):
+    for engine in SUPPORTED_ENGINES:
+        assert engine in profile_text, f"missing supported engine: {engine}"
 
 
 def test_profile_readme_documents_all_official_sdks(profile_text):
