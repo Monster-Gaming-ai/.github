@@ -20,6 +20,18 @@ def test_license_is_apache_2():
     assert "Version 2.0" in license_text
 
 
+def test_license_copyright_holder():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert "Copyright 2026 Luxedeum, LLC d/b/a Monster Gaming" in license_text
+
+
+def test_contributing_includes_contact_channel():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    assert "dev@monstergaming.ai" in contributing
+
+
 def test_pull_request_template_has_release_checklist():
     template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
 
