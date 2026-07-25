@@ -36,6 +36,26 @@ LINKED_RESOURCES = (
     "https://luxedeum.com",
 )
 
+PRODUCT_OFFERINGS = (
+    "[Monster-GPT]",
+    "[OpenAI-compatible API]",
+    "[Engine-aware code generation]",
+    "[Loki Code]",
+)
+
+SUPPORTED_ENGINES = (
+    "Unreal Engine",
+    "Unity",
+    "Godot",
+    "bespoke engines",
+)
+
+SDK_REGISTRY_URLS = (
+    "https://www.npmjs.com/package/@monstergaming/sdk",
+    "https://pypi.org/project/monstergaming/",
+    "https://crates.io/crates/monstergaming",
+)
+
 
 @pytest.fixture(scope="module")
 def profile_text() -> str:
@@ -71,3 +91,27 @@ def test_profile_readme_includes_core_links(profile_text, url):
 def test_profile_readme_uses_https_links_only(profile_text):
     bare_http_links = re.findall(r"(?<!\()http://[^\s)]+", profile_text)
     assert not bare_http_links, f"profile should not use insecure links: {bare_http_links}"
+
+
+def test_profile_readme_has_platform_tagline(profile_text):
+    assert "**AI-powered game development platform.**" in profile_text
+
+
+def test_profile_readme_lists_all_product_offerings(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    for offering in PRODUCT_OFFERINGS:
+        assert offering in offerings_section, f"missing product offering: {offering}"
+
+
+def test_profile_readme_documents_supported_engines(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    for engine in SUPPORTED_ENGINES:
+        assert engine in intro, f"missing engine support mention: {engine}"
+
+
+@pytest.mark.parametrize("registry_url", SDK_REGISTRY_URLS)
+def test_profile_readme_links_sdk_package_registries(profile_text, registry_url):
+    assert registry_url in profile_text
