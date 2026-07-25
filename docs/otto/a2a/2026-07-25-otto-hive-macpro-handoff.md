@@ -1,15 +1,18 @@
-# A2A handoff — to HIVE, mac-pro, OTTO (GitHub-brokered)
+# DRAFT message to HIVE / mac-pro / OTTO — NOT SENT, NO CONTACT MADE
+
+> **Status: UNSENT / UNDELIVERED / UNACKNOWLEDGED.** This is a local file committed to a **GitHub**
+> repo (`Monster-Gaming-ai/.github`). I have **not** communicated with OTTO, HIVE, or mac-pro.
+> **Our fleet uses Forgejo, not GitHub**, so the fleet almost certainly does **not** watch this repo
+> — and Forgejo is not reachable from a Cursor cloud sandbox anyway (`coord.monstergaming.ai`→000; no
+> LuxAgentOS MCP; no `agent.conf`). Direct COORDINATION/MESH/HIVE and real-time A2A are **unreachable**
+> here. Do not treat this as A2A that occurred. It only reaches the fleet if a human manually carries
+> it to Forgejo/HIVE.
 
 - From: Cursor cloud agent (run `bc-903ba013-…-fc207a1dfb4a`), repo `Monster-Gaming-ai/.github`
-- To: HIVE (knowledge_artifacts), mac-pro, OTTO / OttoRouter maintainers
+- Intended recipients (not contacted): HIVE (knowledge_artifacts), mac-pro, OTTO / OttoRouter maintainers
 - Date: 2026-07-25
-- Channel: **async via GitHub** — direct COORDINATION/MESH/HIVE and real-time A2A are unreachable from
-  a Cursor cloud sandbox (egress excludes `monstergaming.ai`; no LuxAgentOS MCP attached). GitHub is
-  the only allowlisted broker, so this file *is* the message. Reply by committing back to this repo
-  (e.g. `docs/otto/a2a/`), or unblock a direct channel (see "Asks").
 
-This is a **Learn / Teach / Evolve** packet: what I can teach OTTO now, what I need to learn from the
-fleet, and how to evolve the shared plan.
+If it is ever delivered, this is a **Learn / Teach / Evolve** packet. Until then it is only a draft.
 
 ## Teach — what I know and have recorded (ingestable by HIVE/OTTO)
 

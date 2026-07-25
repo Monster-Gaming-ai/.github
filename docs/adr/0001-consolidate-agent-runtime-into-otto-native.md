@@ -38,8 +38,10 @@ These are facts gathered from inside a live Cursor cloud-agent run on `Monster-G
 ### A2A verdict
 - **Direct/real-time A2A from a Cursor cloud sandbox to the fleet is not possible** (no MCP here,
   egress excludes our domains, no inbound).
-- **Async A2A is possible today via allowlisted brokers** — GitHub (branches/PRs/issues/commits) and
-  Slack files. Useful as a fallback, but high-latency and awkward as a control plane.
+- **Even async A2A is unreliable from here.** The only allowlisted git host is GitHub, but the fleet
+  uses **Forgejo, not GitHub** — so writing to this GitHub repo does not reach the fleet unless a
+  human carries it over. Forgejo (and Slack posting) are not reachable/allowlisted from the sandbox.
+  There is no dependable A2A channel from a Cursor cloud agent.
 - Conclusion: **self-hosted sandboxes are the correct call.** Owning the VM gives us env vars,
   egress, MCP/tool wiring, and a real A2A bus in one move.
 

@@ -71,9 +71,12 @@ blocked TODO items with concrete unblocks rather than pretended-complete.
 | No arbitrary env vars; only injected secrets | `env` shows no `MG_*`/`HIVE`/`MESH`/`COORD` |
 | No `/etc/monstergaming/agent.conf` | file not present |
 
-**A2A verdict:** direct/real-time A2A to the fleet is **impossible** from a Cursor cloud sandbox.
-Async A2A via GitHub/Slack is possible but high-latency. → **Self-hosted sandboxes are the correct
-path** to control env vars, egress, MCP, and A2A.
+**A2A verdict:** direct/real-time A2A to the fleet is **impossible** from a Cursor cloud sandbox, and
+**no contact with OTTO/HIVE/mac-pro has occurred.** Note the fleet uses **Forgejo, not GitHub** — this
+repo is on GitHub, which the fleet likely does not watch, and Forgejo is not reachable/allowlisted
+here. So even "leave a file and hope someone picks it up" is unreliable and is **not** confirmed
+delivery; it must not be described as A2A that happened. → **Self-hosted sandboxes are the correct
+path** to get real env vars, egress, MCP, and A2A (over Forgejo/NATS).
 
 ---
 
@@ -186,7 +189,9 @@ are **gating prerequisites** — do not commit the OTTO_SERVER/OTTO_CLIENT/nativ
 ## 7b. Governance & cadence (durable practices to honor)
 
 - **Learn → Teach → Evolve** and **Enrich → Explore → Enhance**: each session ingests fleet
-  knowledge, writes learnings back (HIVE / this archive / A2A outbox), and improves the plan.
+  knowledge, writes learnings back (HIVE when reachable / this archive / draft messages), and
+  improves the plan. (From a Cursor sandbox only the local archive is actually writable — no fleet
+  delivery.)
 - **Agent reviews, external:internal ratio favoring externals** — decisions/plans get multi-
   perspective agent review before shipping. *(This turn applied one external review pass; full
   external-majority panels require fleet reviewers — fleet-gated.)*
@@ -216,7 +221,8 @@ are **gating prerequisites** — do not commit the OTTO_SERVER/OTTO_CLIENT/nativ
 ## 9. Pointers
 
 - ADR: `docs/adr/0001-consolidate-agent-runtime-into-otto-native.md`
-- A2A outbox (GitHub-brokered → HIVE/mac-pro/OTTO): `docs/otto/a2a/`
+- Draft (UNSENT) message to HIVE/mac-pro/OTTO — no contact made; fleet uses Forgejo, not this GitHub
+  repo: `docs/otto/a2a/`
 - Bootstrap: `.cursor/commands/session-start.md` · Rule: `.cursor/rules/monster-gaming-stack.mdc`
   · Probe: `scripts/session-start-probe.sh` · Agent guide: `AGENTS.md` *(all on unmerged PR #1)*
 - PRs: #1 (session bootstrap + policy), #3 (ADR + this archive)
