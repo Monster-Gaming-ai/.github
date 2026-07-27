@@ -56,6 +56,23 @@ SDK_REGISTRY_URLS = (
     "https://crates.io/crates/monstergaming",
 )
 
+LOKI_CODE_TECHNICAL_CLAIMS = (
+    "built in C11",
+    "8.1 MB",
+)
+
+AGENT_ROUTING_INTRO_CLAIMS = (
+    "shader",
+    "animation",
+    "netcode",
+    "level design",
+    "QA",
+)
+
+MONSTER_GPT_CLAIMS = (
+    "30+ game dev disciplines",
+)
+
 
 @pytest.fixture(scope="module")
 def profile_text() -> str:
@@ -115,3 +132,40 @@ def test_profile_readme_documents_supported_engines(profile_text):
 @pytest.mark.parametrize("registry_url", SDK_REGISTRY_URLS)
 def test_profile_readme_links_sdk_package_registries(profile_text, registry_url):
     assert registry_url in profile_text
+
+
+def test_profile_readme_preserves_loki_code_technical_claims(profile_text):
+    loki_line = next(
+        (line for line in profile_text.splitlines() if "[Loki Code]" in line),
+        None,
+    )
+    assert loki_line is not None, "Loki Code product line must remain in profile"
+
+    for claim in LOKI_CODE_TECHNICAL_CLAIMS:
+        assert claim in loki_line, f"missing Loki Code technical claim: {claim}"
+
+
+def test_profile_readme_documents_agent_routing_capabilities(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    for claim in AGENT_ROUTING_INTRO_CLAIMS:
+        assert claim in intro, f"missing agent routing claim in intro: {claim}"
+
+    for claim in MONSTER_GPT_CLAIMS:
+        assert claim in offerings, f"missing Monster-GPT routing claim: {claim}"
+
+
+def test_profile_readme_mentions_free_tier_pricing(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    assert "free tier available" in links_section
+
+
+def test_profile_readme_sdk_table_has_valid_markdown_structure(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    assert "| Language | Package | Install |" in sdk_section
+    assert "|----------|---------|---------|" in sdk_section
+    assert sdk_section.count("|") >= 16, "SDK table should have header plus three language rows"
