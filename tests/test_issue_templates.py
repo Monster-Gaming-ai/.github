@@ -97,3 +97,36 @@ def test_issue_template_field_ids_are_unique(filename):
 def test_issue_template_directory_has_expected_templates():
     present = {path.name for path in ISSUE_TEMPLATE_DIR.glob("*.yml")}
     assert present == set(TEMPLATE_FILES.keys())
+
+
+def test_bug_report_includes_expected_behavior_field_for_triage():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    expected_field = fields_by_id["expected"]
+    assert expected_field["type"] == "textarea"
+    assert expected_field.get("validations", {}).get("required") is not True
+
+
+def test_feature_request_includes_alternatives_field():
+    template = _load_template("feature_request.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    alternatives = fields_by_id["alternatives"]
+    assert alternatives["type"] == "textarea"
+    assert alternatives.get("validations", {}).get("required") is not True
+
+
+@pytest.mark.parametrize(
+    "filename,field_id,placeholder_fragment",
+    [
+        ("bug_report.yml", "version", "0.0.5"),
+        ("bug_report.yml", "environment", "Python 3.12"),
+    ],
+)
+def test_bug_report_placeholders_guide_reporters(filename, field_id, placeholder_fragment):
+    template = _load_template(filename)
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    placeholder = fields_by_id[field_id]["attributes"].get("placeholder", "")
+    assert placeholder_fragment in placeholder
