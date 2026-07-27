@@ -39,3 +39,18 @@ def test_pull_request_template_has_release_checklist():
     assert "## How to test" in template
     assert "Tests pass locally" in template
     assert "SPDX headers present on new files" in template
+
+
+def test_contributing_documents_fork_and_branch_workflow():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    assert "Fork the repository" in contributing
+    assert "git checkout -b feat/your-feature" in contributing
+    assert "Submit a pull request" in contributing
+
+
+def test_contributing_requires_spdx_headers_on_new_files():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    assert "SPDX header" in contributing
+    assert "one feature or fix per PR" in contributing
