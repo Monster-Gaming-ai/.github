@@ -54,3 +54,24 @@ def test_contributing_requires_spdx_headers_on_new_files():
 
     assert "SPDX header" in contributing
     assert "one feature or fix per PR" in contributing
+
+
+def test_contributing_quick_start_has_five_step_workflow():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    quick_start = contributing.split("## Quick Start", maxsplit=1)[1]
+    quick_start = quick_start.split("## Guidelines", maxsplit=1)[0]
+
+    for step in ("1.", "2.", "3.", "4.", "5."):
+        assert step in quick_start
+
+
+def test_license_contains_standard_apache_sections():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    for section in (
+        "TERMS AND CONDITIONS FOR USE, REPRODUCTION, AND DISTRIBUTION",
+        "Grant of Copyright License",
+        "Grant of Patent License",
+        "Limitation of Liability",
+    ):
+        assert section in license_text

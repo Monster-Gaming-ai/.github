@@ -73,6 +73,12 @@ MONSTER_GPT_CLAIMS = (
     "30+ game dev disciplines",
 )
 
+LOKI_CODE_BLOG_URL = (
+    "https://blog.monstergaming.ai/we-built-our-own-ai-coding-cli-in-c-because-ours-got-revoked/"
+)
+
+NEWSLETTER_URL = "https://blog.monstergaming.ai/newsletter/"
+
 
 @pytest.fixture(scope="module")
 def profile_text() -> str:
@@ -160,6 +166,33 @@ def test_profile_readme_documents_agent_routing_capabilities(profile_text):
 def test_profile_readme_mentions_free_tier_pricing(profile_text):
     links_section = profile_text.split("## Links", maxsplit=1)[1]
     assert "free tier available" in links_section
+
+
+def test_profile_readme_has_org_title(profile_text):
+    assert profile_text.startswith("# Monster Gaming\n")
+
+
+def test_profile_readme_links_loki_code_blog_post(profile_text):
+    loki_line = next(
+        (line for line in profile_text.splitlines() if "[Loki Code]" in line),
+        None,
+    )
+    assert loki_line is not None
+    assert LOKI_CODE_BLOG_URL in loki_line
+
+
+def test_profile_readme_links_newsletter(profile_text):
+    assert NEWSLETTER_URL in profile_text
+
+
+def test_profile_readme_links_unreal_engine_to_website(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    assert "[Unreal Engine](https://monstergaming.ai)" in intro
+
+
+def test_profile_readme_includes_luxedeum_attribution(profile_text):
+    footer = profile_text.split("## Links", maxsplit=1)[1]
+    assert "A [Luxedeum](https://luxedeum.com) company." in footer
 
 
 def test_profile_readme_sdk_table_has_valid_markdown_structure(profile_text):
