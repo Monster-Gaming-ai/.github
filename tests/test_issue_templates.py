@@ -10,10 +10,14 @@ ISSUE_TEMPLATE_DIR = REPO_ROOT / ".github" / "ISSUE_TEMPLATE"
 
 TEMPLATE_FILES = {
     "bug_report.yml": {
+        "name": "Bug Report",
+        "description": "Report a bug in this SDK",
         "labels": ["bug"],
         "required_field_ids": {"description", "reproduction"},
     },
     "feature_request.yml": {
+        "name": "Feature Request",
+        "description": "Suggest a new feature or improvement",
         "labels": ["enhancement"],
         "required_field_ids": {"problem", "solution"},
     },
@@ -31,8 +35,8 @@ def _load_template(filename: str) -> dict:
 def test_issue_template_is_valid_github_form(filename, expectations):
     template = _load_template(filename)
 
-    assert isinstance(template.get("name"), str) and template["name"].strip()
-    assert isinstance(template.get("description"), str) and template["description"].strip()
+    assert template.get("name") == expectations["name"]
+    assert template.get("description") == expectations["description"]
     assert template.get("labels") == expectations["labels"]
 
     body = template.get("body")
@@ -130,3 +134,22 @@ def test_bug_report_placeholders_guide_reporters(filename, field_id, placeholder
 
     placeholder = fields_by_id[field_id]["attributes"].get("placeholder", "")
     assert placeholder_fragment in placeholder
+
+
+def test_bug_report_required_fields_include_reporter_guidance():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    description = fields_by_id["description"]["attributes"]
+    reproduction = fields_by_id["reproduction"]["attributes"]
+
+    assert "bug" in description["description"].lower()
+    assert "reproduce" in reproduction["description"].lower()
+
+
+def test_feature_request_problem_field_targets_user_need():
+    template = _load_template("feature_request.yml")
+    problem = next(field for field in template["body"] if field["id"] == "problem")
+
+    assert "problem" in problem["attributes"]["label"].lower()
+    assert "problem" in problem["attributes"]["description"].lower()
