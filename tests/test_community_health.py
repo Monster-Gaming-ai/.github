@@ -30,6 +30,7 @@ def test_contributing_includes_contact_channel():
     contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
 
     assert "dev@monstergaming.ai" in contributing
+    assert "Open a Discussion" in contributing
 
 
 def test_pull_request_template_has_release_checklist():

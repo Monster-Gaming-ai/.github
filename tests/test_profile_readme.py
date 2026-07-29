@@ -79,6 +79,20 @@ LOKI_CODE_BLOG_URL = (
 
 NEWSLETTER_URL = "https://blog.monstergaming.ai/newsletter/"
 
+PROFILE_REFRESH_CLAIMS = (
+    "We route your queries through",
+    "auto-routes to specialist agents",
+    "drop-in replacement for OpenAI SDKs",
+    "that actually compile",
+    "weekly dispatch from the engineering floor",
+)
+
+PRODUCT_OFFERING_LINKS = (
+    ("[Monster-GPT]", "https://monstergaming.ai"),
+    ("[OpenAI-compatible API]", "https://monstergaming.ai/quickstart"),
+    ("[Engine-aware code generation]", "https://monstergaming.ai"),
+)
+
 
 @pytest.fixture(scope="module")
 def profile_text() -> str:
@@ -202,3 +216,21 @@ def test_profile_readme_sdk_table_has_valid_markdown_structure(profile_text):
     assert "| Language | Package | Install |" in sdk_section
     assert "|----------|---------|---------|" in sdk_section
     assert sdk_section.count("|") >= 16, "SDK table should have header plus three language rows"
+
+
+def test_profile_readme_preserves_agent_routing_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    for claim in PROFILE_REFRESH_CLAIMS:
+        assert claim in profile_text, f"missing profile refresh claim: {claim}"
+
+    assert "145+ specialist agents" in intro
+
+
+@pytest.mark.parametrize("link_text,url", PRODUCT_OFFERING_LINKS)
+def test_profile_readme_product_offerings_link_to_correct_destinations(profile_text, link_text, url):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    expected = f"{link_text}({url})"
+    assert expected in offerings_section, f"missing or incorrect link for {link_text}"

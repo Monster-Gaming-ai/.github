@@ -34,3 +34,13 @@ def test_validate_workflow_executes_pytest():
     assert any("requirements-dev.txt" in command for command in run_commands)
     assert "Install test dependencies" in step_names
     assert "Run validation tests" in step_names
+
+
+def test_validate_workflow_pins_python_version():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    setup_python = next(
+        step for step in workflow["jobs"]["test"]["steps"] if step.get("uses", "").startswith("actions/setup-python")
+    )
+
+    assert setup_python["with"]["python-version"] == "3.12"
+    assert setup_python["with"]["cache"] == "pip"
