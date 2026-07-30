@@ -93,6 +93,11 @@ PRODUCT_OFFERING_LINKS = (
     ("[Engine-aware code generation]", "https://monstergaming.ai"),
 )
 
+DEPRECATED_PRE_REFRESH_COPY = (
+    "Code generation, debugging, optimization, and asset pipelines",
+    "auto-routes your query to one of 30+ specialist agents",
+)
+
 
 @pytest.fixture(scope="module")
 def profile_text() -> str:
@@ -234,3 +239,37 @@ def test_profile_readme_product_offerings_link_to_correct_destinations(profile_t
 
     expected = f"{link_text}({url})"
     assert expected in offerings_section, f"missing or incorrect link for {link_text}"
+
+
+@pytest.mark.parametrize("deprecated_copy", DEPRECATED_PRE_REFRESH_COPY)
+def test_profile_readme_does_not_revert_to_pre_refresh_copy(profile_text, deprecated_copy):
+    assert deprecated_copy not in profile_text, (
+        f"profile reverted to pre-refresh copy: {deprecated_copy!r}"
+    )
+
+
+def test_profile_readme_newsletter_appears_in_links_section(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    assert "**Newsletter:** [Man in the Machine]" in links_section
+    assert NEWSLETTER_URL in links_section
+    assert "weekly dispatch from the engineering floor" in links_section
+
+
+def test_profile_readme_monster_gpt_disciplines_claim_stays_in_offerings(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "30+ game dev disciplines" not in intro
+    assert "30+ game dev disciplines" in offerings
+
+
+def test_profile_readme_has_four_product_offerings(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    offering_lines = [
+        line for line in offerings_section.splitlines() if line.startswith("- **[")
+    ]
+    assert len(offering_lines) == 4, "profile refresh added Loki Code as a fourth offering"
