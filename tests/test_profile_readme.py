@@ -273,3 +273,48 @@ def test_profile_readme_has_four_product_offerings(profile_text):
         line for line in offerings_section.splitlines() if line.startswith("- **[")
     ]
     assert len(offering_lines) == 4, "profile refresh added Loki Code as a fourth offering"
+
+
+def test_profile_readme_loki_code_is_fourth_offering(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    offering_lines = [
+        line for line in offerings_section.splitlines() if line.startswith("- **[")
+    ]
+    assert offering_lines[-1].startswith("- **[Loki Code]")
+    assert "open-source AI coding CLI" in offering_lines[-1]
+
+
+def test_profile_readme_intro_positions_platform_above_engine(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "sits above the engine" in intro
+    assert "purpose-built for" in intro
+
+
+def test_profile_readme_links_section_has_all_five_resources(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    expected_labels = ("Website", "Pricing", "Quickstart", "Blog", "Newsletter")
+    link_lines = [line for line in links_section.splitlines() if line.startswith("- **")]
+
+    assert len(link_lines) == 5
+    for label, line in zip(expected_labels, link_lines, strict=True):
+        assert line.startswith(f"- **{label}:**")
+
+
+def test_profile_readme_engine_aware_codegen_claims(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    api_line = next(
+        line for line in offerings_section.splitlines() if "[OpenAI-compatible API]" in line
+    )
+    codegen_line = next(
+        line for line in offerings_section.splitlines() if "[Engine-aware code generation]" in line
+    )
+
+    assert "game-dev-tuned models" in api_line
+    assert "gameplay systems, shaders, networking, and UI" in codegen_line
