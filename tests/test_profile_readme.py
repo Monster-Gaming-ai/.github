@@ -93,6 +93,21 @@ PRODUCT_OFFERING_LINKS = (
     ("[Engine-aware code generation]", "https://monstergaming.ai"),
 )
 
+CANONICAL_OFFERING_HEADERS = (
+    "[Monster-GPT]",
+    "[OpenAI-compatible API]",
+    "[Engine-aware code generation]",
+    "[Loki Code]",
+)
+
+LINKS_SECTION_RESOURCES = (
+    ("Website", "https://monstergaming.ai"),
+    ("Pricing", "https://monstergaming.ai/pricing"),
+    ("Quickstart", "https://monstergaming.ai/quickstart"),
+    ("Blog", "https://blog.monstergaming.ai"),
+    ("Newsletter", "https://blog.monstergaming.ai/newsletter/"),
+)
+
 DEPRECATED_PRE_REFRESH_COPY = (
     "Code generation, debugging, optimization, and asset pipelines",
     "auto-routes your query to one of 30+ specialist agents",
@@ -318,3 +333,56 @@ def test_profile_readme_engine_aware_codegen_claims(profile_text):
 
     assert "game-dev-tuned models" in api_line
     assert "gameplay systems, shaders, networking, and UI" in codegen_line
+
+
+def test_profile_readme_product_offerings_maintain_canonical_order(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    offering_lines = [
+        line for line in offerings_section.splitlines() if line.startswith("- **[")
+    ]
+    headers = [line[line.index("[") : line.index("]") + 1] for line in offering_lines]
+
+    assert headers == list(CANONICAL_OFFERING_HEADERS)
+
+
+def test_profile_readme_monster_gpt_leads_with_flagship_claim(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    first_offering = next(
+        line for line in offerings_section.splitlines() if line.startswith("- **[")
+    )
+    assert first_offering.startswith("- **[Monster-GPT]")
+    assert "flagship model" in first_offering
+
+
+def test_profile_readme_loki_code_line_includes_test_count(profile_text):
+    loki_line = next(
+        (line for line in profile_text.splitlines() if "[Loki Code]" in line),
+        None,
+    )
+    assert loki_line is not None
+    assert "195 tests" in loki_line
+
+
+def test_profile_readme_specialist_examples_stay_in_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    agent_routing_phrase = "shader, animation, netcode, level design, QA"
+    assert agent_routing_phrase in intro
+    assert agent_routing_phrase not in offerings
+
+
+@pytest.mark.parametrize("label,url", LINKS_SECTION_RESOURCES)
+def test_profile_readme_links_section_pairs_labels_with_urls(profile_text, label, url):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    expected = f"- **{label}:**"
+    matching_lines = [line for line in links_section.splitlines() if line.startswith(expected)]
+    assert len(matching_lines) == 1, f"missing or duplicated link label: {label}"
+    assert f"]({url})" in matching_lines[0], f"{label} must link to {url}"

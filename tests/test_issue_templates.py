@@ -153,3 +153,19 @@ def test_feature_request_problem_field_targets_user_need():
 
     assert "problem" in problem["attributes"]["label"].lower()
     assert "problem" in problem["attributes"]["description"].lower()
+
+
+def test_feature_request_solution_field_is_required_with_guidance():
+    template = _load_template("feature_request.yml")
+    solution = next(field for field in template["body"] if field["id"] == "solution")
+
+    assert solution.get("validations", {}).get("required") is True
+    assert "solution" in solution["attributes"]["label"].lower()
+    assert "work" in solution["attributes"]["description"].lower()
+
+
+def test_bug_report_fields_follow_triage_order():
+    template = _load_template("bug_report.yml")
+    field_ids = [field["id"] for field in template["body"]]
+
+    assert field_ids == ["description", "reproduction", "expected", "version", "environment"]
