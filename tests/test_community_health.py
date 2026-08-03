@@ -76,3 +76,20 @@ def test_license_contains_standard_apache_sections():
         "Limitation of Liability",
     ):
         assert section in license_text
+
+
+def test_pull_request_template_checklist_has_three_items():
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    checklist_items = [line for line in template.splitlines() if line.startswith("- [ ]")]
+
+    assert len(checklist_items) == 3
+    assert any("Tests pass locally" in item for item in checklist_items)
+    assert any("Documentation updated" in item for item in checklist_items)
+    assert any("SPDX headers present" in item for item in checklist_items)
+
+
+def test_gitignore_excludes_python_test_artifacts():
+    gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
+
+    for pattern in ("__pycache__/", ".pytest_cache/", "*.py[cod]"):
+        assert pattern in gitignore

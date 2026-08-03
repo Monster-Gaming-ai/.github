@@ -44,3 +44,19 @@ def test_validate_workflow_pins_python_version():
 
     assert setup_python["with"]["python-version"] == "3.12"
     assert setup_python["with"]["cache"] == "pip"
+
+
+def test_validate_workflow_has_display_name():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    assert workflow.get("name") == "Validate org profile"
+
+
+def test_validate_workflow_uses_checkout_and_pip_cache_path():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["test"]["steps"]
+
+    checkout = next(step for step in steps if step.get("uses", "").startswith("actions/checkout"))
+    setup_python = next(step for step in steps if step.get("uses", "").startswith("actions/setup-python"))
+
+    assert checkout["uses"] == "actions/checkout@v4"
+    assert setup_python["with"]["cache-dependency-path"] == "requirements-dev.txt"

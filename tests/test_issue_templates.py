@@ -169,3 +169,33 @@ def test_bug_report_fields_follow_triage_order():
     field_ids = [field["id"] for field in template["body"]]
 
     assert field_ids == ["description", "reproduction", "expected", "version", "environment"]
+
+
+def test_feature_request_fields_follow_problem_solution_order():
+    template = _load_template("feature_request.yml")
+    field_ids = [field["id"] for field in template["body"]]
+
+    problem_idx = field_ids.index("problem")
+    solution_idx = field_ids.index("solution")
+    alternatives_idx = field_ids.index("alternatives")
+
+    assert problem_idx < solution_idx
+    assert solution_idx < alternatives_idx
+
+
+def test_feature_request_solution_field_is_required_with_guidance():
+    template = _load_template("feature_request.yml")
+    solution = next(field for field in template["body"] if field["id"] == "solution")
+
+    assert solution.get("validations", {}).get("required") is True
+    assert "solution" in solution["attributes"]["label"].lower()
+    assert "work" in solution["attributes"]["description"].lower()
+
+
+def test_bug_report_expected_field_guides_triage_without_blocking_submit():
+    template = _load_template("bug_report.yml")
+    expected = next(field for field in template["body"] if field["id"] == "expected")
+
+    assert expected["type"] == "textarea"
+    assert "expect" in expected["attributes"]["description"].lower()
+    assert expected.get("validations", {}).get("required") is not True
