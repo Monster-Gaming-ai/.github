@@ -200,3 +200,13 @@ def test_bug_report_expected_field_guides_triage_without_blocking_submit():
     assert expected["type"] == "textarea"
     assert "expect" in expected["attributes"]["description"].lower()
     assert expected.get("validations", {}).get("required") is not True
+
+
+def test_feature_request_alternatives_field_guides_contributors():
+    template = _load_template("feature_request.yml")
+    alternatives = next(field for field in template["body"] if field["id"] == "alternatives")
+
+    assert alternatives["type"] == "textarea"
+    assert "alternative" in alternatives["attributes"]["label"].lower()
+    assert "approach" in alternatives["attributes"]["description"].lower()
+    assert alternatives.get("validations", {}).get("required") is not True

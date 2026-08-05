@@ -60,3 +60,15 @@ def test_validate_workflow_uses_checkout_and_pip_cache_path():
 
     assert checkout["uses"] == "actions/checkout@v4"
     assert setup_python["with"]["cache-dependency-path"] == "requirements-dev.txt"
+
+
+def test_validate_workflow_job_runs_on_ubuntu_latest():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    assert workflow["jobs"]["test"]["runs-on"] == "ubuntu-latest"
+
+
+def test_requirements_dev_lists_pytest_and_pyyaml():
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+
+    assert "pytest" in requirements
+    assert "PyYAML" in requirements

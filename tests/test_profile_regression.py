@@ -42,3 +42,15 @@ def test_profile_refresh_newsletter_is_fifth_link(profile_text):
 
     assert link_lines[-1].startswith("- **Newsletter:**")
     assert "Man in the Machine" in link_lines[-1]
+
+
+def test_profile_refresh_agent_counts_are_not_swapped_between_sections(profile_text):
+    """145+ agents belong in intro; 30+ disciplines belong in Monster-GPT offering."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "145+ specialist agents" in intro
+    assert "145+ specialist agents" not in offerings
+    assert "30+ game dev disciplines" in offerings
+    assert "30+ game dev disciplines" not in intro
