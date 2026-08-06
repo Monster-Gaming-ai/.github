@@ -210,3 +210,18 @@ def test_feature_request_alternatives_field_guides_contributors():
     assert "alternative" in alternatives["attributes"]["label"].lower()
     assert "approach" in alternatives["attributes"]["description"].lower()
     assert alternatives.get("validations", {}).get("required") is not True
+
+
+def test_bug_report_metadata_fields_are_optional():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    for field_id in ("expected", "version", "environment"):
+        field = fields_by_id[field_id]
+        assert field.get("validations", {}).get("required") is not True
+
+
+def test_bug_report_template_scopes_issues_to_sdk():
+    template = _load_template("bug_report.yml")
+
+    assert "SDK" in template["description"]

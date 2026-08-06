@@ -406,3 +406,59 @@ def test_profile_readme_markdown_links_are_balanced(profile_text):
     close_parens_after_links = len(re.findall(r"\]\([^)]+\)", profile_text))
 
     assert open_brackets == close_parens_after_links, "profile contains malformed markdown links"
+
+
+SDK_TABLE_ROWS = (
+    ("TypeScript / JavaScript", "@monstergaming/sdk", "https://www.npmjs.com/package/@monstergaming/sdk"),
+    ("Python", "monstergaming", "https://pypi.org/project/monstergaming/"),
+    ("Rust", "monstergaming", "https://crates.io/crates/monstergaming"),
+)
+
+
+def test_profile_readme_sdk_table_pairs_packages_with_registry_urls(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    data_rows = [
+        line
+        for line in sdk_section.splitlines()
+        if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    assert len(data_rows) == 3
+
+    for row, (language, package, registry_url) in zip(data_rows, SDK_TABLE_ROWS, strict=True):
+        assert language in row
+        assert package in row
+        assert registry_url in row
+
+
+def test_profile_readme_sdk_table_maintains_canonical_language_order(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    data_rows = [
+        line
+        for line in sdk_section.splitlines()
+        if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    languages = [row.split("|", maxsplit=3)[1].strip() for row in data_rows]
+
+    assert languages == [language for language, _, _ in SDK_TABLE_ROWS]
+
+
+def test_profile_readme_loki_code_offering_links_to_blog_not_website(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    loki_line = next(line for line in offerings_section.splitlines() if "[Loki Code]" in line)
+    link_target = loki_line.split("[Loki Code]", maxsplit=1)[1].split(")", maxsplit=1)[0]
+
+    assert link_target.startswith("(")
+    assert LOKI_CODE_BLOG_URL in link_target
+    assert "https://monstergaming.ai" not in link_target
+
+
+def test_profile_readme_intro_agent_routing_ends_with_and_more(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "level design, QA, and more" in intro

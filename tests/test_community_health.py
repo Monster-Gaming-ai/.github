@@ -93,3 +93,25 @@ def test_gitignore_excludes_python_test_artifacts():
 
     for pattern in ("__pycache__/", ".pytest_cache/", "*.py[cod]"):
         assert pattern in gitignore
+
+
+def test_contributing_guidelines_has_four_bullets():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    guidelines = contributing.split("## Guidelines", maxsplit=1)[1]
+    guidelines = guidelines.split("## License", maxsplit=1)[0]
+
+    guideline_lines = [line for line in guidelines.splitlines() if line.startswith("- ")]
+    assert len(guideline_lines) == 4
+
+
+def test_pull_request_template_sections_follow_review_order():
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    headings = [line for line in template.splitlines() if line.startswith("## ")]
+
+    assert headings == ["## What does this PR do?", "## How to test", "## Checklist"]
+
+
+def test_license_includes_official_license_reference_url():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert "http://www.apache.org/licenses/LICENSE-2.0" in license_text

@@ -72,3 +72,12 @@ def test_requirements_dev_lists_pytest_and_pyyaml():
 
     assert "pytest" in requirements
     assert "PyYAML" in requirements
+
+
+def test_validate_workflow_uses_setup_python_v5():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    setup_python = next(
+        step for step in workflow["jobs"]["test"]["steps"] if step.get("uses", "").startswith("actions/setup-python")
+    )
+
+    assert setup_python["uses"] == "actions/setup-python@v5"
