@@ -94,3 +94,14 @@ def test_validate_workflow_uses_setup_python_v5():
     )
 
     assert setup_python["uses"] == "actions/setup-python@v5"
+
+
+def test_validate_workflow_pytest_uses_quiet_flag():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    run_commands = [
+        step.get("run", "")
+        for step in workflow["jobs"]["test"]["steps"]
+        if "run" in step
+    ]
+
+    assert any(command.strip() == "pytest -q" for command in run_commands)

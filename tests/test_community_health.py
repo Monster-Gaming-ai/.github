@@ -132,3 +132,12 @@ def test_contributing_license_section_references_apache():
 
     assert "Apache-2.0 License" in license_section
     assert "licensed under" in license_section.lower()
+
+
+def test_license_contains_all_nine_apache_sections():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    for section_number in range(1, 10):
+        assert f"   {section_number}." in license_text, (
+            f"missing Apache-2.0 section {section_number}; license may be truncated"
+        )

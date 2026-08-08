@@ -54,3 +54,11 @@ def test_profile_refresh_agent_counts_are_not_swapped_between_sections(profile_t
     assert "145+ specialist agents" not in offerings
     assert "30+ game dev disciplines" in offerings
     assert "30+ game dev disciplines" not in intro
+
+
+def test_profile_refresh_intro_avoids_legacy_singular_auto_route_copy(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "We route your queries through" in intro
+    assert "We auto-route" not in intro
+    assert "auto-route your query" not in intro
