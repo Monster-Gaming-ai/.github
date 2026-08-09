@@ -469,6 +469,7 @@ def test_profile_readme_links_use_display_paths_for_nested_routes(profile_text):
     links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
 
     display_path_links = (
+        ("Website", "monstergaming.ai"),
         ("Pricing", "monstergaming.ai/pricing"),
         ("Quickstart", "monstergaming.ai/quickstart"),
         ("Blog", "blog.monstergaming.ai"),
@@ -477,6 +478,12 @@ def test_profile_readme_links_use_display_paths_for_nested_routes(profile_text):
         matching = [line for line in links_section.splitlines() if line.startswith(f"- **{label}:**")]
         assert len(matching) == 1
         assert f"[{display_path}]" in matching[0]
+
+
+def test_profile_readme_intro_identifies_ai_platform(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "Monster Gaming is an AI platform" in intro
 
 
 def test_profile_readme_loki_code_is_open_source(profile_text):

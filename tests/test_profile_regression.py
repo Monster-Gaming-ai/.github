@@ -1,11 +1,13 @@
 """Regression guards for profile refresh commit 4618966 (145 agents, Loki Code, newsletter)."""
 
+import re
 from pathlib import Path
 
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROFILE_README = REPO_ROOT / "profile" / "README.md"
+NEWSLETTER_URL = "https://blog.monstergaming.ai/newsletter/"
 
 PRE_REFRESH_AGENT_ROUTING = "auto-routes your query to one of 30+ specialist agents"
 PRE_REFRESH_ASSET_PIPELINES = "Code generation, debugging, optimization, and asset pipelines"
@@ -62,3 +64,40 @@ def test_profile_refresh_intro_avoids_legacy_singular_auto_route_copy(profile_te
     assert "We route your queries through" in intro
     assert "We auto-route" not in intro
     assert "auto-route your query" not in intro
+
+
+def test_profile_refresh_loki_code_stays_in_offerings_not_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "[Loki Code]" not in intro
+    assert "open-source AI coding CLI" not in intro
+
+
+def test_profile_refresh_newsletter_url_stays_in_links_section(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    assert NEWSLETTER_URL not in intro
+    assert NEWSLETTER_URL not in offerings
+    assert NEWSLETTER_URL in links_section
+
+
+def test_profile_refresh_monster_gpt_line_has_no_agent_routing_examples(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    monster_gpt_line = next(
+        line for line in offerings.splitlines() if line.startswith("- **[Monster-GPT]")
+    )
+
+    for example in ("shader", "animation", "netcode", "level design"):
+        assert example not in monster_gpt_line.lower()
+
+
+def test_profile_refresh_agent_count_uses_plus_suffix(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "145+ specialist agents" in intro
+    assert re.search(r"\b145 specialist agents\b", intro) is None

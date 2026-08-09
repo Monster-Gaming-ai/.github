@@ -13,6 +13,21 @@ def test_contributing_guidelines_reference_license_and_tests():
     assert "Ensure tests pass" in contributing
 
 
+def test_contributing_has_title_and_welcome_message():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    assert contributing.startswith("# Contributing to Monster Gaming\n")
+    assert "We welcome contributions!" in contributing
+
+
+def test_contributing_guidelines_require_code_style():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    guidelines = contributing.split("## Guidelines", maxsplit=1)[1]
+    guidelines = guidelines.split("## License", maxsplit=1)[0]
+
+    assert "Follow existing code style and conventions" in guidelines
+
+
 def test_license_is_apache_2():
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
 
