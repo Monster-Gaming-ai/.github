@@ -115,3 +115,37 @@ def test_license_includes_official_license_reference_url():
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
 
     assert "http://www.apache.org/licenses/LICENSE-2.0" in license_text
+
+
+def test_license_contains_numbered_sections_one_through_nine():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    for section_number in range(1, 10):
+        assert f"   {section_number}." in license_text
+
+
+def test_license_has_copyright_notice_after_end_of_terms():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    end_marker = "END OF TERMS AND CONDITIONS"
+    end_index = license_text.index(end_marker)
+    notice_block = license_text[end_index:]
+
+    assert "Copyright 2026 Luxedeum, LLC d/b/a Monster Gaming" in notice_block
+    assert "Licensed under the Apache License, Version 2.0" in notice_block
+    assert "limitations under the License." in notice_block
+
+
+def test_contributing_has_title_and_welcome():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+
+    assert contributing.startswith("# Contributing to Monster Gaming")
+    assert "We welcome contributions!" in contributing
+
+
+def test_contributing_guidelines_include_code_style_bullet():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    guidelines = contributing.split("## Guidelines", maxsplit=1)[1]
+    guidelines = guidelines.split("## License", maxsplit=1)[0]
+
+    assert "Follow existing code style and conventions" in guidelines

@@ -74,6 +74,20 @@ def test_requirements_dev_lists_pytest_and_pyyaml():
     assert "PyYAML" in requirements
 
 
+def test_requirements_dev_pins_compatible_versions():
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+
+    assert "pytest>=8.0,<9" in requirements
+    assert "PyYAML>=6.0,<7" in requirements
+
+
+def test_validate_workflow_runs_pytest_in_quiet_mode():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    run_commands = [step.get("run", "") for step in workflow["jobs"]["test"]["steps"] if "run" in step]
+
+    assert any("pytest -q" in command for command in run_commands)
+
+
 def test_validate_workflow_uses_setup_python_v5():
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
     setup_python = next(

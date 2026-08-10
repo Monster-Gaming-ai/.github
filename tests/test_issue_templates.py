@@ -225,3 +225,15 @@ def test_bug_report_template_scopes_issues_to_sdk():
     template = _load_template("bug_report.yml")
 
     assert "SDK" in template["description"]
+
+
+@pytest.mark.parametrize(
+    "placeholder_fragment",
+    ["Node 22", "Python 3.12", "Rust 1.95"],
+)
+def test_bug_report_environment_placeholder_covers_multi_sdk_stack(placeholder_fragment):
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    placeholder = fields_by_id["environment"]["attributes"].get("placeholder", "")
+    assert placeholder_fragment in placeholder

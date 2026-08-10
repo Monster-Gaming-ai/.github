@@ -108,6 +108,13 @@ LINKS_SECTION_RESOURCES = (
     ("Newsletter", "https://blog.monstergaming.ai/newsletter/"),
 )
 
+LINKS_SECTION_DISPLAY_PATHS = (
+    ("Website", "[monstergaming.ai](https://monstergaming.ai)"),
+    ("Pricing", "[monstergaming.ai/pricing](https://monstergaming.ai/pricing)"),
+    ("Quickstart", "[monstergaming.ai/quickstart](https://monstergaming.ai/quickstart)"),
+    ("Blog", "[blog.monstergaming.ai](https://blog.monstergaming.ai)"),
+)
+
 DEPRECATED_PRE_REFRESH_COPY = (
     "Code generation, debugging, optimization, and asset pipelines",
     "auto-routes your query to one of 30+ specialist agents",
@@ -462,3 +469,35 @@ def test_profile_readme_intro_agent_routing_ends_with_and_more(profile_text):
     intro = profile_text.split("## What We Build", maxsplit=1)[0]
 
     assert "level design, QA, and more" in intro
+
+
+@pytest.mark.parametrize("label,display_link", LINKS_SECTION_DISPLAY_PATHS)
+def test_profile_readme_links_section_uses_path_style_display_text(profile_text, label, display_link):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    matching_lines = [
+        line for line in links_section.splitlines() if line.startswith(f"- **{label}:**")
+    ]
+    assert len(matching_lines) == 1
+    assert display_link in matching_lines[0]
+
+
+def test_profile_readme_intro_describes_ai_platform(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "Monster Gaming is an AI platform" in intro
+    assert "sits above the engine" in intro
+
+
+def test_profile_readme_monster_gpt_line_excludes_agent_routing_examples(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    monster_gpt_line = next(
+        line for line in offerings_section.splitlines() if "[Monster-GPT]" in line
+    )
+    agent_routing_phrase = "shader, animation, netcode, level design, QA"
+
+    assert agent_routing_phrase not in monster_gpt_line
+    assert "145+ specialist agents" not in monster_gpt_line
