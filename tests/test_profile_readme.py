@@ -530,3 +530,29 @@ def test_profile_readme_newsletter_name_stays_in_links_section(profile_text):
     assert "Man in the Machine" not in intro
     assert "Man in the Machine" not in offerings
     assert "Man in the Machine" in links_section
+
+
+def test_org_profile_readme_lives_at_github_required_path():
+    """GitHub org profiles require profile/README.md at the repository root."""
+    path = REPO_ROOT / "profile" / "README.md"
+    assert path.is_file(), "org profile must be at profile/README.md for GitHub to display it"
+
+
+def test_profile_readme_non_unreal_engines_remain_plain_text_in_intro(profile_text):
+    """Only Unreal Engine is hyperlinked; Unity, Godot, and bespoke stay plain text."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "[Unreal Engine](https://monstergaming.ai)" in intro
+    assert "[Unity]" not in intro
+    assert "[Godot]" not in intro
+    assert "[bespoke engines]" not in intro
+    assert "Unity, Godot, and bespoke engines" in intro
+
+
+def test_profile_readme_openai_drop_in_claim_stays_in_offerings(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "drop-in replacement for OpenAI SDKs" not in intro
+    assert "drop-in replacement for OpenAI SDKs" in offerings

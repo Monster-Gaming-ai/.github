@@ -48,6 +48,14 @@ def test_contributing_includes_contact_channel():
     assert "Open a Discussion" in contributing
 
 
+def test_contributing_questions_section_is_last():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    headings = [line for line in contributing.splitlines() if line.startswith("## ")]
+
+    assert headings[-1] == "## Questions?"
+    assert "dev@monstergaming.ai" in contributing.split("## Questions?", maxsplit=1)[1]
+
+
 def test_pull_request_template_has_release_checklist():
     template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
 
