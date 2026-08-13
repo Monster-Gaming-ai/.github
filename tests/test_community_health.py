@@ -175,3 +175,21 @@ def test_license_contains_all_nine_apache_sections():
         assert f"   {section_number}." in license_text, (
             f"missing Apache-2.0 section {section_number}; license may be truncated"
         )
+
+
+def test_license_starts_with_apache_version_identifier():
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert license_text.startswith("                                 Apache License")
+    assert "Version 2.0, January 2004" in license_text.splitlines()[1]
+
+
+def test_contributing_quick_start_requires_tests_before_pr_submission():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    quick_start = contributing.split("## Quick Start", maxsplit=1)[1]
+    quick_start = quick_start.split("## Guidelines", maxsplit=1)[0]
+
+    steps = [line for line in quick_start.splitlines() if line.strip()[:1].isdigit()]
+    assert len(steps) == 5
+    assert "Ensure tests pass" in steps[3]
+    assert "Submit a pull request" in steps[4]

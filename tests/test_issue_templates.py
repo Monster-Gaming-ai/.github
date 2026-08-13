@@ -242,3 +242,13 @@ def test_feature_request_template_metadata():
     assert template["name"] == "Feature Request"
     assert template["description"] == "Suggest a new feature or improvement"
     assert template["labels"] == ["enhancement"]
+
+
+def test_bug_report_required_fields_are_textareas():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    for field_id in ("description", "reproduction"):
+        field = fields_by_id[field_id]
+        assert field["type"] == "textarea"
+        assert field.get("validations", {}).get("required") is True

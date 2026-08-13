@@ -105,3 +105,19 @@ def test_validate_workflow_pytest_uses_quiet_flag():
     ]
 
     assert any(command.strip() == "pytest -q" for command in run_commands)
+
+
+def test_validate_workflow_steps_follow_setup_order():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["test"]["steps"]
+
+    checkout_idx = next(
+        i for i, step in enumerate(steps) if step.get("uses", "").startswith("actions/checkout")
+    )
+    setup_python_idx = next(
+        i for i, step in enumerate(steps) if step.get("uses", "").startswith("actions/setup-python")
+    )
+    install_idx = next(i for i, step in enumerate(steps) if step.get("name") == "Install test dependencies")
+    pytest_idx = next(i for i, step in enumerate(steps) if step.get("name") == "Run validation tests")
+
+    assert checkout_idx < setup_python_idx < install_idx < pytest_idx

@@ -556,3 +556,26 @@ def test_profile_readme_openai_drop_in_claim_stays_in_offerings(profile_text):
 
     assert "drop-in replacement for OpenAI SDKs" not in intro
     assert "drop-in replacement for OpenAI SDKs" in offerings
+
+
+def test_profile_readme_sections_appear_in_document_order(profile_text):
+    what_we_build = profile_text.index("## What We Build")
+    official_sdks = profile_text.index("## Official SDKs")
+    links = profile_text.index("## Links")
+
+    assert what_we_build < official_sdks < links
+
+
+def test_profile_readme_has_exactly_three_h2_sections(profile_text):
+    h2_headings = [line for line in profile_text.splitlines() if line.startswith("## ")]
+    assert h2_headings == ["## What We Build", "## Official SDKs", "## Links"]
+
+
+def test_profile_readme_luxedeum_link_only_in_footer(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    body = profile_text.split("## What We Build", maxsplit=1)[1]
+    body_before_footer = body.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "luxedeum.com" not in intro
+    assert "luxedeum.com" not in body_before_footer
+    assert "A [Luxedeum](https://luxedeum.com) company." in profile_text
