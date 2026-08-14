@@ -386,3 +386,229 @@ def test_profile_readme_links_section_pairs_labels_with_urls(profile_text, label
     matching_lines = [line for line in links_section.splitlines() if line.startswith(expected)]
     assert len(matching_lines) == 1, f"missing or duplicated link label: {label}"
     assert f"]({url})" in matching_lines[0], f"{label} must link to {url}"
+
+
+def test_profile_readme_sdk_table_rows_use_install_code_formatting(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    data_rows = [
+        line for line in sdk_section.splitlines() if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    assert len(data_rows) == 3
+
+    for row in data_rows:
+        assert "`" in row, f"SDK install command should use code formatting: {row}"
+
+
+def test_profile_readme_markdown_links_are_balanced(profile_text):
+    open_brackets = profile_text.count("](")
+    close_parens_after_links = len(re.findall(r"\]\([^)]+\)", profile_text))
+
+    assert open_brackets == close_parens_after_links, "profile contains malformed markdown links"
+
+
+SDK_TABLE_ROWS = (
+    ("TypeScript / JavaScript", "@monstergaming/sdk", "https://www.npmjs.com/package/@monstergaming/sdk"),
+    ("Python", "monstergaming", "https://pypi.org/project/monstergaming/"),
+    ("Rust", "monstergaming", "https://crates.io/crates/monstergaming"),
+)
+
+
+def test_profile_readme_sdk_table_pairs_packages_with_registry_urls(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    data_rows = [
+        line
+        for line in sdk_section.splitlines()
+        if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    assert len(data_rows) == 3
+
+    for row, (language, package, registry_url) in zip(data_rows, SDK_TABLE_ROWS, strict=True):
+        assert language in row
+        assert package in row
+        assert registry_url in row
+
+
+def test_profile_readme_sdk_table_maintains_canonical_language_order(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    data_rows = [
+        line
+        for line in sdk_section.splitlines()
+        if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    languages = [row.split("|", maxsplit=3)[1].strip() for row in data_rows]
+
+    assert languages == [language for language, _, _ in SDK_TABLE_ROWS]
+
+
+def test_profile_readme_loki_code_offering_links_to_blog_not_website(profile_text):
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    loki_line = next(line for line in offerings_section.splitlines() if "[Loki Code]" in line)
+    link_target = loki_line.split("[Loki Code]", maxsplit=1)[1].split(")", maxsplit=1)[0]
+
+    assert link_target.startswith("(")
+    assert LOKI_CODE_BLOG_URL in link_target
+    assert "https://monstergaming.ai" not in link_target
+
+
+def test_profile_readme_intro_agent_routing_ends_with_and_more(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "level design, QA, and more" in intro
+
+
+def test_profile_readme_links_use_display_paths_for_nested_routes(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    display_path_links = (
+        ("Website", "monstergaming.ai"),
+        ("Pricing", "monstergaming.ai/pricing"),
+        ("Quickstart", "monstergaming.ai/quickstart"),
+        ("Blog", "blog.monstergaming.ai"),
+    )
+    for label, display_path in display_path_links:
+        matching = [line for line in links_section.splitlines() if line.startswith(f"- **{label}:**")]
+        assert len(matching) == 1
+        assert f"[{display_path}]" in matching[0]
+
+
+def test_profile_readme_intro_identifies_ai_platform(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "Monster Gaming is an AI platform" in intro
+
+
+def test_profile_readme_loki_code_is_open_source(profile_text):
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert "open-source" in loki_line
+    assert "AI coding CLI" in loki_line
+
+
+def test_profile_readme_newsletter_uses_branded_display_text_not_path_style(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    newsletter_line = next(
+        line for line in links_section.splitlines() if line.startswith("- **Newsletter:**")
+    )
+    assert "[Man in the Machine]" in newsletter_line
+    assert "[blog.monstergaming.ai/newsletter/]" not in newsletter_line
+
+
+def test_profile_readme_loki_technical_specs_stay_in_offerings_not_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    for spec in ("195 tests", "8.1 MB", "built in C11"):
+        assert spec not in intro, f"Loki Code spec {spec!r} must stay in offerings section"
+
+
+def test_profile_readme_monster_gpt_line_excludes_agent_count(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    monster_gpt_line = next(
+        line for line in offerings.splitlines() if line.startswith("- **[Monster-GPT]")
+    )
+    assert "145+ specialist agents" not in monster_gpt_line
+
+
+def test_profile_readme_newsletter_name_stays_in_links_section(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    assert "Man in the Machine" not in intro
+    assert "Man in the Machine" not in offerings
+    assert "Man in the Machine" in links_section
+
+
+def test_org_profile_readme_lives_at_github_required_path():
+    """GitHub org profiles require profile/README.md at the repository root."""
+    path = REPO_ROOT / "profile" / "README.md"
+    assert path.is_file(), "org profile must be at profile/README.md for GitHub to display it"
+
+
+def test_profile_readme_non_unreal_engines_remain_plain_text_in_intro(profile_text):
+    """Only Unreal Engine is hyperlinked; Unity, Godot, and bespoke stay plain text."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "[Unreal Engine](https://monstergaming.ai)" in intro
+    assert "[Unity]" not in intro
+    assert "[Godot]" not in intro
+    assert "[bespoke engines]" not in intro
+    assert "Unity, Godot, and bespoke engines" in intro
+
+
+def test_profile_readme_openai_drop_in_claim_stays_in_offerings(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "drop-in replacement for OpenAI SDKs" not in intro
+    assert "drop-in replacement for OpenAI SDKs" in offerings
+
+
+def test_profile_readme_sections_appear_in_document_order(profile_text):
+    what_we_build = profile_text.index("## What We Build")
+    official_sdks = profile_text.index("## Official SDKs")
+    links = profile_text.index("## Links")
+
+    assert what_we_build < official_sdks < links
+
+
+def test_profile_readme_has_exactly_three_h2_sections(profile_text):
+    h2_headings = [line for line in profile_text.splitlines() if line.startswith("## ")]
+    assert h2_headings == ["## What We Build", "## Official SDKs", "## Links"]
+
+
+def test_profile_readme_luxedeum_link_only_in_footer(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    body = profile_text.split("## What We Build", maxsplit=1)[1]
+    body_before_footer = body.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "luxedeum.com" not in intro
+    assert "luxedeum.com" not in body_before_footer
+    assert "A [Luxedeum](https://luxedeum.com) company." in profile_text
+
+
+def test_profile_readme_sdk_table_package_names_are_hyperlinked(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    expected_links = (
+        "[@monstergaming/sdk](https://www.npmjs.com/package/@monstergaming/sdk)",
+        "[monstergaming](https://pypi.org/project/monstergaming/)",
+        "[monstergaming](https://crates.io/crates/monstergaming)",
+    )
+    for link in expected_links:
+        assert link in sdk_section, f"missing hyperlinked package name: {link}"
+
+
+def test_profile_readme_loki_blog_url_stays_out_of_sdk_section(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    assert LOKI_CODE_BLOG_URL not in sdk_section
+    assert "[Loki Code]" not in sdk_section
+
+
+def test_profile_readme_pricing_url_stays_in_links_section(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    pricing_url = "https://monstergaming.ai/pricing"
+    assert pricing_url not in intro
+    assert pricing_url not in offerings
+    assert pricing_url in links_section

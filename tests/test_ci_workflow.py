@@ -60,3 +60,74 @@ def test_validate_workflow_uses_checkout_and_pip_cache_path():
 
     assert checkout["uses"] == "actions/checkout@v4"
     assert setup_python["with"]["cache-dependency-path"] == "requirements-dev.txt"
+
+
+def test_validate_workflow_job_runs_on_ubuntu_latest():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    assert workflow["jobs"]["test"]["runs-on"] == "ubuntu-latest"
+
+
+def test_requirements_dev_lists_pytest_and_pyyaml():
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+
+    assert "pytest" in requirements
+    assert "PyYAML" in requirements
+
+
+def test_requirements_dev_pins_compatible_major_versions():
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+
+    assert "pytest>=8.0,<9" in requirements
+    assert "PyYAML>=6.0,<7" in requirements
+
+
+def test_validate_workflow_has_single_test_job():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert set(workflow["jobs"].keys()) == {"test"}
+
+
+def test_validate_workflow_uses_setup_python_v5():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    setup_python = next(
+        step for step in workflow["jobs"]["test"]["steps"] if step.get("uses", "").startswith("actions/setup-python")
+    )
+
+    assert setup_python["uses"] == "actions/setup-python@v5"
+
+
+def test_validate_workflow_pytest_uses_quiet_flag():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    run_commands = [
+        step.get("run", "")
+        for step in workflow["jobs"]["test"]["steps"]
+        if "run" in step
+    ]
+
+    assert any(command.strip() == "pytest -q" for command in run_commands)
+
+
+def test_validate_workflow_steps_follow_setup_order():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    steps = workflow["jobs"]["test"]["steps"]
+
+    checkout_idx = next(
+        i for i, step in enumerate(steps) if step.get("uses", "").startswith("actions/checkout")
+    )
+    setup_python_idx = next(
+        i for i, step in enumerate(steps) if step.get("uses", "").startswith("actions/setup-python")
+    )
+    install_idx = next(i for i, step in enumerate(steps) if step.get("name") == "Install test dependencies")
+    pytest_idx = next(i for i, step in enumerate(steps) if step.get("name") == "Run validation tests")
+
+    assert checkout_idx < setup_python_idx < install_idx < pytest_idx
+
+
+def test_validate_workflow_pip_install_uses_requirements_file():
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    install_step = next(
+        step for step in workflow["jobs"]["test"]["steps"]
+        if step.get("name") == "Install test dependencies"
+    )
+
+    assert install_step["run"].strip() == "pip install -r requirements-dev.txt"

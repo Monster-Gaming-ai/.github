@@ -183,13 +183,14 @@ def test_feature_request_fields_follow_problem_solution_order():
     assert solution_idx < alternatives_idx
 
 
-def test_feature_request_solution_field_is_required_with_guidance():
-    template = _load_template("feature_request.yml")
-    solution = next(field for field in template["body"] if field["id"] == "solution")
+def test_bug_report_template_has_exactly_five_fields():
+    template = _load_template("bug_report.yml")
+    assert len(template["body"]) == 5
 
-    assert solution.get("validations", {}).get("required") is True
-    assert "solution" in solution["attributes"]["label"].lower()
-    assert "work" in solution["attributes"]["description"].lower()
+
+def test_feature_request_template_has_exactly_three_fields():
+    template = _load_template("feature_request.yml")
+    assert len(template["body"]) == 3
 
 
 def test_bug_report_expected_field_guides_triage_without_blocking_submit():
@@ -199,3 +200,70 @@ def test_bug_report_expected_field_guides_triage_without_blocking_submit():
     assert expected["type"] == "textarea"
     assert "expect" in expected["attributes"]["description"].lower()
     assert expected.get("validations", {}).get("required") is not True
+
+
+def test_feature_request_alternatives_field_guides_contributors():
+    template = _load_template("feature_request.yml")
+    alternatives = next(field for field in template["body"] if field["id"] == "alternatives")
+
+    assert alternatives["type"] == "textarea"
+    assert "alternative" in alternatives["attributes"]["label"].lower()
+    assert "approach" in alternatives["attributes"]["description"].lower()
+    assert alternatives.get("validations", {}).get("required") is not True
+
+
+def test_bug_report_metadata_fields_are_optional():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    for field_id in ("expected", "version", "environment"):
+        field = fields_by_id[field_id]
+        assert field.get("validations", {}).get("required") is not True
+
+
+def test_bug_report_template_scopes_issues_to_sdk():
+    template = _load_template("bug_report.yml")
+
+    assert "SDK" in template["description"]
+
+
+def test_bug_report_environment_placeholder_covers_all_official_sdks():
+    template = _load_template("bug_report.yml")
+    environment = next(field for field in template["body"] if field["id"] == "environment")
+    placeholder = environment["attributes"].get("placeholder", "")
+
+    for runtime_hint in ("Node 22", "Python 3.12", "Rust 1.95"):
+        assert runtime_hint in placeholder
+
+
+def test_feature_request_template_metadata():
+    template = _load_template("feature_request.yml")
+
+    assert template["name"] == "Feature Request"
+    assert template["description"] == "Suggest a new feature or improvement"
+    assert template["labels"] == ["enhancement"]
+
+
+def test_bug_report_required_fields_are_textareas():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    for field_id in ("description", "reproduction"):
+        field = fields_by_id[field_id]
+        assert field["type"] == "textarea"
+        assert field.get("validations", {}).get("required") is True
+
+
+def test_feature_request_fields_are_all_textareas():
+    template = _load_template("feature_request.yml")
+
+    for field in template["body"]:
+        assert field["type"] == "textarea", f"feature request field {field['id']} must be textarea"
+
+
+def test_bug_report_version_field_labels_sdk_scope():
+    template = _load_template("bug_report.yml")
+    version = next(field for field in template["body"] if field["id"] == "version")
+
+    assert version["attributes"]["label"] == "SDK Version"
+    assert "placeholder" in version["attributes"]
