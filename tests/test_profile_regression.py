@@ -114,3 +114,41 @@ def test_profile_refresh_compile_claim_stays_in_engine_aware_offering(profile_te
 
     assert "that actually compile" in codegen_line
     assert "that actually compile" not in intro
+
+
+def test_profile_refresh_newsletter_dispatch_text_stays_in_links_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    dispatch_copy = "weekly dispatch from the engineering floor"
+    assert dispatch_copy in links_section
+    assert dispatch_copy not in intro
+    assert dispatch_copy not in offerings
+
+
+PRE_REFRESH_INTRO_CAPABILITIES = ("debugging", "optimization", "asset pipelines")
+
+
+@pytest.mark.parametrize("capability", PRE_REFRESH_INTRO_CAPABILITIES)
+def test_profile_refresh_dropped_legacy_intro_capabilities(profile_text, capability):
+    """Partial reverts may restore individual terms from the pre-refresh intro."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    assert capability not in intro.lower()
+
+
+def test_profile_refresh_intro_uses_plural_queries_not_singular(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "We route your queries through" in intro
+    assert "your query" not in intro.lower()
+
+
+def test_profile_refresh_sdk_section_excludes_newsletter_content(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    assert NEWSLETTER_URL not in sdk_section
+    assert "Man in the Machine" not in sdk_section
+    assert "Newsletter" not in sdk_section

@@ -267,3 +267,12 @@ def test_bug_report_version_field_labels_sdk_scope():
 
     assert version["attributes"]["label"] == "SDK Version"
     assert "placeholder" in version["attributes"]
+
+
+def test_bug_report_environment_field_has_label_and_placeholder():
+    template = _load_template("bug_report.yml")
+    environment = next(field for field in template["body"] if field["id"] == "environment")
+
+    assert environment["attributes"]["label"] == "Environment"
+    assert "Node 22" in environment["attributes"]["placeholder"]
+    assert environment.get("validations", {}).get("required") is not True
