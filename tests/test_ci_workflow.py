@@ -131,3 +131,11 @@ def test_validate_workflow_pip_install_uses_requirements_file():
     )
 
     assert install_step["run"].strip() == "pip install -r requirements-dev.txt"
+
+
+def test_validate_workflow_is_sole_ci_gate():
+    """Only validate.yml should gate merges; duplicate workflows cause drift."""
+    workflows_dir = REPO_ROOT / ".github" / "workflows"
+    workflow_files = sorted(path.name for path in workflows_dir.glob("*.yml"))
+
+    assert workflow_files == ["validate.yml"]

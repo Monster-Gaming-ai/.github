@@ -114,3 +114,33 @@ def test_profile_refresh_compile_claim_stays_in_engine_aware_offering(profile_te
 
     assert "that actually compile" in codegen_line
     assert "that actually compile" not in intro
+
+
+@pytest.mark.parametrize(
+    "legacy_capability",
+    ("Code generation", "debugging", "optimization", "asset pipelines"),
+)
+def test_profile_refresh_legacy_capability_terms_not_in_intro(profile_text, legacy_capability):
+    """Partial reverts often reintroduce individual pre-refresh capability phrases."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert legacy_capability not in intro
+
+
+def test_profile_refresh_intro_uses_plural_queries(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "We route your queries through" in intro
+    assert "We route your query through" not in intro
+
+
+def test_profile_refresh_newsletter_dispatch_stays_in_links_section(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+
+    dispatch_copy = "weekly dispatch from the engineering floor"
+    assert dispatch_copy not in intro
+    assert dispatch_copy not in offerings
+    assert dispatch_copy in links_section

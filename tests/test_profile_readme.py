@@ -612,3 +612,44 @@ def test_profile_readme_pricing_url_stays_in_links_section(profile_text):
     assert pricing_url not in intro
     assert pricing_url not in offerings
     assert pricing_url in links_section
+
+
+def test_profile_readme_newsletter_url_stays_out_of_sdk_section(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    assert NEWSLETTER_URL not in sdk_section
+    assert "Man in the Machine" not in sdk_section
+
+
+def test_profile_readme_blog_homepage_url_stays_in_links_section(profile_text):
+    """Blog homepage URL belongs in Links; Loki Code may link to a specific blog post."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    blog_homepage = "](https://blog.monstergaming.ai)"
+    assert blog_homepage not in intro
+    assert blog_homepage not in sdk_section
+    assert blog_homepage in links_section
+
+
+@pytest.mark.parametrize(
+    "install_command",
+    ("npm install @monstergaming/sdk", "pip install monstergaming", "cargo add monstergaming"),
+)
+def test_profile_readme_sdk_install_commands_stay_in_sdk_section(profile_text, install_command):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    assert install_command in sdk_section
+    assert install_command not in intro
+    assert install_command not in offerings
+    assert install_command not in links_section
