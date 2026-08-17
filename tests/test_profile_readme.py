@@ -653,3 +653,55 @@ def test_profile_readme_sdk_install_commands_stay_in_sdk_section(profile_text, i
     assert install_command not in intro
     assert install_command not in offerings
     assert install_command not in links_section
+
+
+def test_profile_readme_flagship_claim_stays_in_offerings_not_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "flagship model" not in intro
+    assert "flagship model" in offerings
+
+
+def test_profile_readme_game_dev_tuned_claim_stays_in_offerings_not_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "game-dev-tuned models" not in intro
+    assert "game-dev-tuned models" in offerings
+
+
+def test_profile_readme_quickstart_url_stays_out_of_sdk_section(profile_text):
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+
+    quickstart_url = "https://monstergaming.ai/quickstart"
+    assert quickstart_url not in sdk_section
+
+
+def test_profile_readme_loki_blog_url_preserves_revoked_post_path(profile_text):
+    """Loki Code must link to the specific engineering blog post, not a truncated path."""
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert "because-ours-got-revoked" in loki_line
+    assert LOKI_CODE_BLOG_URL in loki_line
+
+
+def test_profile_readme_intro_lists_engines_in_canonical_order(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    unreal_idx = intro.index("Unreal Engine")
+    unity_idx = intro.index("Unity")
+    godot_idx = intro.index("Godot")
+    bespoke_idx = intro.index("bespoke engines")
+
+    assert unreal_idx < unity_idx < godot_idx < bespoke_idx
+
+
+def test_profile_readme_intro_has_no_product_offering_bullets(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    offering_bullets = [line for line in intro.splitlines() if line.startswith("- **[")]
+    assert not offering_bullets, "product offerings belong under ## What We Build, not intro"

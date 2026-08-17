@@ -275,3 +275,19 @@ def test_bug_report_environment_field_label():
 
     assert environment["attributes"]["label"] == "Environment"
     assert environment["type"] == "input"
+
+
+def test_bug_report_required_field_labels_guide_reporters():
+    template = _load_template("bug_report.yml")
+    fields_by_id = {field["id"]: field for field in template["body"]}
+
+    assert fields_by_id["description"]["attributes"]["label"] == "Describe the bug"
+    assert fields_by_id["reproduction"]["attributes"]["label"] == "Steps to reproduce"
+
+
+def test_feature_request_proposed_solution_label():
+    template = _load_template("feature_request.yml")
+    solution = next(field for field in template["body"] if field["id"] == "solution")
+
+    assert solution["attributes"]["label"] == "Proposed solution"
+    assert solution["attributes"]["description"] == "How would you like this to work?"

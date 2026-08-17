@@ -222,3 +222,12 @@ def test_license_omits_apache_appendix():
 
     assert "APPENDIX" not in license_text
     assert "How to apply the Apache License" not in license_text
+
+
+def test_contributing_quick_start_includes_make_changes_step():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    quick_start = contributing.split("## Quick Start", maxsplit=1)[1]
+    quick_start = quick_start.split("## Guidelines", maxsplit=1)[0]
+
+    steps = [line for line in quick_start.splitlines() if line.strip()[:1].isdigit()]
+    assert steps[2].strip() == "3. Make your changes"
