@@ -148,3 +148,26 @@ def test_validate_workflow_is_sole_ci_gate():
     workflow_files = sorted(path.name for path in workflows_dir.glob("*.yml"))
 
     assert workflow_files == ["validate.yml"]
+
+
+EXPECTED_TEST_MODULES = (
+    "test_ci_workflow.py",
+    "test_community_health.py",
+    "test_issue_templates.py",
+    "test_profile_readme.py",
+    "test_profile_regression.py",
+)
+
+
+def test_validation_suite_includes_all_expected_test_modules():
+    """Coverage automation must keep module boundaries — missing files silently drop guards."""
+    present = sorted(path.name for path in (REPO_ROOT / "tests").glob("test_*.py"))
+
+    assert present == list(EXPECTED_TEST_MODULES)
+
+
+def test_requirements_dev_lists_only_test_dependencies():
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8").splitlines()
+    non_empty = [line for line in requirements if line.strip() and not line.strip().startswith("#")]
+
+    assert non_empty == ["pytest>=8.0,<9", "PyYAML>=6.0,<7"]

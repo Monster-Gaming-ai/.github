@@ -306,6 +306,7 @@ def test_profile_readme_intro_positions_platform_above_engine(profile_text):
 
     assert "sits above the engine" in intro
     assert "purpose-built for" in intro
+    assert "Monster Gaming is an AI platform that sits above the engine" in intro
 
 
 def test_profile_readme_links_section_has_all_five_resources(profile_text):

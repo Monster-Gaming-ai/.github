@@ -329,3 +329,17 @@ def test_feature_request_alternatives_field_label():
 
     assert alternatives["attributes"]["label"] == "Alternatives considered"
     assert alternatives["attributes"]["description"] == "Any other approaches you've thought about?"
+
+
+def test_bug_report_version_placeholder_is_exact_sdk_example():
+    template = _load_template("bug_report.yml")
+    version = next(field for field in template["body"] if field["id"] == "version")
+
+    assert version["attributes"]["placeholder"] == "e.g., 0.0.5"
+
+
+def test_bug_report_environment_placeholder_lists_all_official_runtimes():
+    template = _load_template("bug_report.yml")
+    environment = next(field for field in template["body"] if field["id"] == "environment")
+
+    assert environment["attributes"]["placeholder"] == "e.g., Node 22, Python 3.12, Rust 1.95"

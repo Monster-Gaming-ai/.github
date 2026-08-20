@@ -10,6 +10,9 @@ PROFILE_README = REPO_ROOT / "profile" / "README.md"
 NEWSLETTER_URL = "https://blog.monstergaming.ai/newsletter/"
 
 PRE_REFRESH_AGENT_ROUTING = "auto-routes your query to one of 30+ specialist agents"
+PRE_REFRESH_MONSTER_GPT_PARENTHETICAL = (
+    "(shader, animation, netcode, level design, QA, and more)"
+)
 PRE_REFRESH_ASSET_PIPELINES = "Code generation, debugging, optimization, and asset pipelines"
 
 
@@ -185,6 +188,55 @@ def test_profile_refresh_product_offerings_use_em_dash_separator(profile_text):
 
     for line in offering_lines:
         assert " — " in line, f"offering must separate link from description with em dash: {line}"
+
+
+def test_profile_refresh_monster_gpt_drops_parenthetical_agent_examples(profile_text):
+    """4618966 moved agent examples from Monster-GPT line into the intro paragraph."""
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    monster_gpt_line = next(
+        line for line in offerings.splitlines() if line.startswith("- **[Monster-GPT]")
+    )
+
+    assert PRE_REFRESH_MONSTER_GPT_PARENTHETICAL not in monster_gpt_line
+    assert PRE_REFRESH_MONSTER_GPT_PARENTHETICAL not in profile_text
+
+
+def test_profile_refresh_monster_gpt_avoids_full_pre_refresh_routing_line(profile_text):
+    """Partial reverts sometimes restore the old Monster-GPT routing sentence."""
+    full_legacy_line = (
+        "flagship model that auto-routes your query to one of 30+ specialist agents "
+        f"{PRE_REFRESH_MONSTER_GPT_PARENTHETICAL}"
+    )
+
+    assert full_legacy_line not in profile_text
+
+
+def test_profile_refresh_engine_aware_offering_uses_writes_verb(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    codegen_line = next(
+        line for line in offerings.splitlines() if "[Engine-aware code generation]" in line
+    )
+
+    assert "writes gameplay systems, shaders, networking, and UI that actually compile" in codegen_line
+
+
+def test_profile_refresh_loki_code_uses_our_open_source_phrasing(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    loki_line = next(line for line in offerings.splitlines() if "[Loki Code]" in line)
+
+    assert "our open-source AI coding CLI" in loki_line
+
+
+def test_profile_refresh_monster_gpt_name_stays_out_of_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "Monster-GPT" not in intro
 
 
 def test_profile_refresh_monster_gpt_does_not_link_to_blog_or_quickstart(profile_text):
