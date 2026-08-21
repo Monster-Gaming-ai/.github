@@ -753,3 +753,43 @@ def test_profile_readme_engine_aware_codegen_links_to_main_site_not_quickstart(p
 
     assert "[Engine-aware code generation](https://monstergaming.ai)" in codegen_line
     assert "quickstart" not in codegen_line
+
+
+def test_profile_readme_intro_is_single_paragraph(profile_text):
+    """Org profile intro should stay one paragraph for clean GitHub rendering."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    paragraph_lines = [
+        line
+        for line in intro.splitlines()
+        if line.strip() and line.startswith("Monster Gaming is")
+    ]
+    assert len(paragraph_lines) == 1
+
+
+def test_profile_readme_tagline_immediately_follows_title(profile_text):
+    lines = profile_text.splitlines()
+
+    assert lines[0] == "# Monster Gaming"
+    assert lines[1] == ""
+    assert lines[2] == "**AI-powered game development platform.**"
+
+
+def test_profile_readme_has_no_h3_subsections(profile_text):
+    h3_headings = [line for line in profile_text.splitlines() if line.startswith("### ")]
+    assert not h3_headings, "org profile should use only H1/H2 headings"
+
+
+def test_profile_readme_luxedeum_footer_is_last_nonblank_line(profile_text):
+    nonblank_lines = [line for line in profile_text.splitlines() if line.strip()]
+    assert nonblank_lines[-1] == "A [Luxedeum](https://luxedeum.com) company."
+
+
+def test_profile_readme_pricing_line_uses_em_dash_before_free_tier(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    pricing_line = next(
+        line for line in links_section.splitlines() if line.startswith("- **Pricing:**")
+    )
+    assert "— free tier available" in pricing_line

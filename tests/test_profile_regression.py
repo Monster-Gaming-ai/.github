@@ -250,3 +250,36 @@ def test_profile_refresh_monster_gpt_does_not_link_to_blog_or_quickstart(profile
     assert "blog.monstergaming.ai" not in monster_gpt_line
     assert "quickstart" not in monster_gpt_line
     assert "[Monster-GPT](https://monstergaming.ai)" in monster_gpt_line
+
+
+def test_profile_refresh_loki_specs_maintain_canonical_order(profile_text):
+    """4618966 lists Loki technical claims as C11, test count, then binary size."""
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    c11_idx = loki_line.index("built in C11")
+    tests_idx = loki_line.index("195 tests")
+    size_idx = loki_line.index("8.1 MB")
+
+    assert c11_idx < tests_idx < size_idx
+
+
+def test_profile_refresh_disciplines_count_uses_plus_suffix(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    assert "30+ game dev disciplines" in offerings
+    assert re.search(r"\b30 game dev disciplines\b", offerings) is None
+
+
+def test_profile_refresh_newsletter_url_preserves_trailing_slash(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert f"]({NEWSLETTER_URL})" in links_section
+    assert "](https://blog.monstergaming.ai/newsletter)" not in links_section
+
+
+def test_profile_refresh_loki_blog_slug_preserves_full_engineering_path(profile_text):
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert "we-built-our-own-ai-coding-cli-in-c-because-ours-got-revoked" in loki_line

@@ -233,3 +233,11 @@ def test_contributing_quick_start_includes_make_changes_step():
 
     steps = [line for line in quick_start.splitlines() if line.strip()[:1].isdigit()]
     assert steps[2].strip() == "3. Make your changes"
+
+
+def test_contributing_questions_section_references_discussions():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    questions = contributing.split("## Questions?", maxsplit=1)[1]
+
+    assert "Open a Discussion on this repository" in questions
+    assert "dev@monstergaming.ai" in questions
