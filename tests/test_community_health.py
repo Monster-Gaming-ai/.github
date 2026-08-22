@@ -29,6 +29,17 @@ def test_contributing_guidelines_require_code_style():
     assert "Follow existing code style and conventions" in guidelines
 
 
+def test_contributing_guidelines_pr_focus_uses_em_dash():
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    guidelines = contributing.split("## Guidelines", maxsplit=1)[1]
+    guidelines = guidelines.split("## License", maxsplit=1)[0]
+
+    pr_focus_bullet = next(
+        line for line in guidelines.splitlines() if "one feature or fix per PR" in line
+    )
+    assert pr_focus_bullet.strip() == "- Keep PRs focused — one feature or fix per PR"
+
+
 def test_license_is_apache_2():
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
 

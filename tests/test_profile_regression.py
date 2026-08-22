@@ -8,8 +8,15 @@ import pytest
 REPO_ROOT = Path(__file__).resolve().parents[1]
 PROFILE_README = REPO_ROOT / "profile" / "README.md"
 NEWSLETTER_URL = "https://blog.monstergaming.ai/newsletter/"
+LOKI_CODE_BLOG_URL = (
+    "https://blog.monstergaming.ai/we-built-our-own-ai-coding-cli-in-c-because-ours-got-revoked/"
+)
+LOKI_SPECS_COMMA_FORMAT = "built in C11, 195 tests, 8.1 MB"
 
 PRE_REFRESH_AGENT_ROUTING = "auto-routes your query to one of 30+ specialist agents"
+PRE_REFRESH_INTRO_CAPABILITY_SENTENCE = (
+    "Code generation, debugging, optimization, and asset pipelines — purpose-built for"
+)
 PRE_REFRESH_MONSTER_GPT_PARENTHETICAL = (
     "(shader, animation, netcode, level design, QA, and more)"
 )
@@ -283,3 +290,62 @@ def test_profile_refresh_loki_blog_slug_preserves_full_engineering_path(profile_
     loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
 
     assert "we-built-our-own-ai-coding-cli-in-c-because-ours-got-revoked" in loki_line
+
+
+def test_profile_refresh_newsletter_line_uses_em_dash_before_dispatch(profile_text):
+    """4618966 mirrors pricing-line formatting: em dash before the newsletter tagline."""
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    newsletter_line = next(
+        line for line in links_section.splitlines() if line.startswith("- **Newsletter:**")
+    )
+    assert "— weekly dispatch from the engineering floor" in newsletter_line
+
+
+def test_profile_refresh_loki_blog_url_preserves_trailing_slash(profile_text):
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert f"]({LOKI_CODE_BLOG_URL})" in loki_line
+    assert "because-ours-got-revoked)" not in loki_line
+
+
+def test_profile_refresh_loki_specs_use_comma_separated_format(profile_text):
+    """Partial reverts sometimes reorder or drop individual Loki technical claims."""
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert LOKI_SPECS_COMMA_FORMAT in loki_line
+
+
+def test_profile_refresh_intro_avoids_parenthetical_agent_examples(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert PRE_REFRESH_MONSTER_GPT_PARENTHETICAL not in intro
+    assert re.search(r"\(shader", intro) is None
+
+
+def test_profile_refresh_monster_gpt_avoids_your_query_phrasing(profile_text):
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    monster_gpt_line = next(
+        line for line in offerings.splitlines() if line.startswith("- **[Monster-GPT]")
+    )
+
+    assert "your query" not in monster_gpt_line.lower()
+
+
+def test_profile_refresh_intro_avoids_full_pre_refresh_capability_sentence(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert PRE_REFRESH_INTRO_CAPABILITY_SENTENCE not in intro
+
+
+def test_profile_refresh_specialist_agents_across_stays_in_offerings(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+
+    phrase = "specialist agents across"
+    assert phrase not in intro
+    assert phrase in offerings
