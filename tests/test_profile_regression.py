@@ -395,3 +395,29 @@ def test_profile_refresh_newsletter_dispatch_stays_out_of_sdk_section(profile_te
 
     assert "weekly dispatch from the engineering floor" not in sdk_section
     assert "Man in the Machine" not in sdk_section
+
+
+def test_profile_refresh_specialist_agents_phrase_stays_out_of_sdk_and_links(profile_text):
+    """145+ routing narrative must not drift into SDK install docs or footer links."""
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    phrase = "145+ specialist agents"
+    assert phrase not in sdk_section
+    assert phrase not in links_section
+
+
+def test_profile_refresh_drop_in_claim_stays_out_of_links_section(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "drop-in replacement for OpenAI SDKs" not in links_section
+
+
+def test_profile_refresh_loki_blog_url_stays_out_of_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert LOKI_CODE_BLOG_URL not in intro
+    assert "because-ours-got-revoked" not in intro

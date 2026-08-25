@@ -912,3 +912,77 @@ def test_profile_readme_game_dev_tuned_claim_stays_out_of_sdk_and_links_sections
 
     assert claim not in _sdk_section(profile_text)
     assert claim not in links_section
+
+
+def test_profile_readme_sits_above_engine_claim_stays_in_intro_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    claim = "sits above the engine"
+    assert claim in intro
+    assert claim not in offerings
+    assert claim not in _sdk_section(profile_text)
+    assert claim not in links_section
+
+
+def test_profile_readme_purpose_built_for_stays_in_intro_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    claim = "purpose-built for"
+    assert claim in intro
+    assert claim not in offerings
+    assert claim not in _sdk_section(profile_text)
+    assert claim not in links_section
+
+
+def test_profile_readme_engine_aware_offering_stays_out_of_sdk_and_links(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "[Engine-aware code generation]" not in _sdk_section(profile_text)
+    assert "[Engine-aware code generation]" not in links_section
+
+
+def test_profile_readme_openai_api_offering_stays_out_of_sdk_and_links(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "[OpenAI-compatible API]" not in _sdk_section(profile_text)
+    assert "[OpenAI-compatible API]" not in links_section
+
+
+def test_profile_readme_flagship_claim_stays_out_of_sdk_and_links(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "flagship model" not in _sdk_section(profile_text)
+    assert "flagship model" not in links_section
+
+
+def test_profile_readme_compile_claim_stays_out_of_links_section(profile_text):
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert "that actually compile" not in links_section
+
+
+def test_profile_readme_gameplay_systems_claim_stays_out_of_sdk_and_links(profile_text):
+    claim = "gameplay systems, shaders, networking, and UI"
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert claim not in _sdk_section(profile_text)
+    assert claim not in links_section
+
+
+def test_profile_readme_writes_verb_stays_out_of_intro(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+
+    assert "writes gameplay systems" not in intro
