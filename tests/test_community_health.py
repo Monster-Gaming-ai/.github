@@ -294,3 +294,11 @@ def test_pull_request_template_tests_checklist_uses_exact_wording():
 
     tests_item = next(item for item in checklist_items if "Tests pass locally" in item)
     assert tests_item == "- [ ] Tests pass locally"
+
+
+def test_pull_request_template_spdx_checklist_uses_exact_wording():
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    checklist_items = [line for line in template.splitlines() if line.startswith("- [ ]")]
+
+    spdx_item = next(item for item in checklist_items if "SPDX headers present" in item)
+    assert spdx_item == "- [ ] SPDX headers present on new files"

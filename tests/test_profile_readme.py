@@ -1088,3 +1088,97 @@ def test_profile_readme_luxedeum_url_appears_once_in_footer_only(profile_text):
     assert profile_text.count(luxedeum_url) == 1
     assert luxedeum_url not in intro
     assert luxedeum_url not in body_before_footer
+
+
+MAIN_SITE_URL = "https://monstergaming.ai"
+BLOG_HOMEPAGE_URL = "https://blog.monstergaming.ai"
+PRICING_URL = "https://monstergaming.ai/pricing"
+
+
+def _link_targets(profile_text: str) -> list[str]:
+    return re.findall(r"\]\((https?://[^)]+)\)", profile_text)
+
+
+def test_profile_readme_main_site_url_appears_four_times_as_link_target(profile_text):
+    """Bare main-site links belong in intro, two offerings, and Website — not SDK or blog paths."""
+    main_site_links = [url for url in _link_targets(profile_text) if url == MAIN_SITE_URL]
+    assert len(main_site_links) == 4
+
+
+def test_profile_readme_main_site_url_scoped_to_canonical_sections(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert f"[Unreal Engine]({MAIN_SITE_URL})" in intro
+    assert f"[Monster-GPT]({MAIN_SITE_URL})" in offerings
+    assert f"[Engine-aware code generation]({MAIN_SITE_URL})" in offerings
+    assert f"[monstergaming.ai]({MAIN_SITE_URL})" in links_section
+
+
+def test_profile_readme_blog_homepage_url_appears_once_in_links_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    sdk_section = _sdk_section(profile_text)
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    blog_link = f"]({BLOG_HOMEPAGE_URL})"
+    assert profile_text.count(blog_link) == 1
+    assert blog_link in links_section
+    assert blog_link not in intro
+    assert blog_link not in offerings
+    assert blog_link not in sdk_section
+
+
+def test_profile_readme_pricing_url_appears_once_in_links_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    sdk_section = _sdk_section(profile_text)
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert profile_text.count(PRICING_URL) == 1
+    assert PRICING_URL in links_section
+    assert PRICING_URL not in intro
+    assert PRICING_URL not in offerings
+    assert PRICING_URL not in sdk_section
+
+
+def test_profile_readme_unreal_engine_link_appears_once_in_intro_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    body = profile_text.split("## What We Build", maxsplit=1)[1]
+    unreal_link = f"[Unreal Engine]({MAIN_SITE_URL})"
+
+    assert profile_text.count(unreal_link) == 1
+    assert unreal_link in intro
+    assert unreal_link not in body
+
+
+def test_profile_readme_flagship_model_appears_once_in_offerings_only(profile_text):
+    phrase = "flagship model"
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    tail = profile_text.split("## Official SDKs", maxsplit=1)[1]
+
+    assert profile_text.count(phrase) == 1
+    assert phrase not in intro
+    assert phrase in offerings
+    assert phrase not in tail
+
+
+def test_profile_readme_open_source_appears_once_in_offerings_only(profile_text):
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    tail = profile_text.split("## Official SDKs", maxsplit=1)[1]
+
+    assert profile_text.count("open-source") == 1
+    assert "open-source" not in intro
+    assert "open-source" in offerings
+    assert "open-source" not in tail
