@@ -1182,3 +1182,38 @@ def test_profile_readme_open_source_appears_once_in_offerings_only(profile_text)
     assert "open-source" not in intro
     assert "open-source" in offerings
     assert "open-source" not in tail
+
+
+PROFILE_REFRESH_SINGLETON_CLAIMS = (
+    "that actually compile",
+    "drop-in replacement for OpenAI SDKs",
+    "game-dev-tuned models",
+    "writes gameplay systems",
+    "open-source AI coding CLI",
+    "our open-source AI coding CLI",
+    "Monster-GPT",
+    "weekly dispatch from the engineering floor",
+    "specialist agents across",
+    "shader, animation, netcode, level design, QA",
+    "Monster Gaming is an AI platform that sits above the engine",
+)
+
+
+@pytest.mark.parametrize("claim", PROFILE_REFRESH_SINGLETON_CLAIMS)
+def test_profile_readme_profile_refresh_claims_appear_once(profile_text, claim):
+    """4618966 claims must not be duplicated across sections by partial reverts."""
+    assert profile_text.count(claim) == 1, f"claim must appear exactly once: {claim!r}"
+
+
+OFFERING_HYPERLINKS = (
+    f"[Monster-GPT]({MAIN_SITE_URL})",
+    "[OpenAI-compatible API](https://monstergaming.ai/quickstart)",
+    f"[Engine-aware code generation]({MAIN_SITE_URL})",
+    f"[Loki Code]({LOKI_CODE_BLOG_URL})",
+)
+
+
+@pytest.mark.parametrize("hyperlink", OFFERING_HYPERLINKS)
+def test_profile_readme_offering_hyperlinks_appear_once(profile_text, hyperlink):
+    """Each product offering must link exactly once — duplicates confuse GitHub readers."""
+    assert profile_text.count(hyperlink) == 1, f"offering hyperlink must appear once: {hyperlink!r}"
