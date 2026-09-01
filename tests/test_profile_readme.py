@@ -656,6 +656,39 @@ def test_profile_readme_sdk_install_commands_stay_in_sdk_section(profile_text, i
     assert install_command not in links_section
 
 
+@pytest.mark.parametrize("registry_url", SDK_REGISTRY_URLS)
+def test_profile_readme_sdk_registry_urls_stay_in_sdk_section_only(profile_text, registry_url):
+    """Package registry links belong only in the SDK table — drift duplicates install paths."""
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert registry_url in sdk_section
+    assert registry_url not in intro
+    assert registry_url not in offerings
+    assert registry_url not in links_section
+
+
+def test_profile_readme_typescript_package_name_stays_in_sdk_section_only(profile_text):
+    package = "@monstergaming/sdk"
+    sdk_section = profile_text.split("## Official SDKs", maxsplit=1)[1]
+    sdk_section = sdk_section.split("## Links", maxsplit=1)[0]
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert package in sdk_section
+    assert package not in intro
+    assert package not in offerings
+    assert package not in links_section
+
+
 def test_profile_readme_flagship_claim_stays_in_offerings_not_intro(profile_text):
     intro = profile_text.split("## What We Build", maxsplit=1)[0]
     offerings = profile_text.split("## What We Build", maxsplit=1)[1]
@@ -1217,3 +1250,17 @@ OFFERING_HYPERLINKS = (
 def test_profile_readme_offering_hyperlinks_appear_once(profile_text, hyperlink):
     """Each product offering must link exactly once — duplicates confuse GitHub readers."""
     assert profile_text.count(hyperlink) == 1, f"offering hyperlink must appear once: {hyperlink!r}"
+
+
+OFFERING_DISPLAY_NAMES = (
+    "[OpenAI-compatible API]",
+    "[Engine-aware code generation]",
+)
+
+
+@pytest.mark.parametrize("display_name", OFFERING_DISPLAY_NAMES)
+def test_profile_readme_offering_display_names_appear_once(profile_text, display_name):
+    """Each offering label must not be duplicated across sections by partial profile edits."""
+    assert profile_text.count(display_name) == 1, (
+        f"offering display name must appear exactly once: {display_name!r}"
+    )

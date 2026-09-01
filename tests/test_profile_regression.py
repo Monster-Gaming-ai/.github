@@ -48,6 +48,15 @@ CANONICAL_NEWSLETTER_LINE = (
     "- **Newsletter:** [Man in the Machine](https://blog.monstergaming.ai/newsletter/) "
     "— weekly dispatch from the engineering floor"
 )
+CANONICAL_WEBSITE_LINE = "- **Website:** [monstergaming.ai](https://monstergaming.ai)"
+CANONICAL_PRICING_LINE = (
+    "- **Pricing:** [monstergaming.ai/pricing](https://monstergaming.ai/pricing) "
+    "— free tier available"
+)
+CANONICAL_QUICKSTART_LINE = (
+    "- **Quickstart:** [monstergaming.ai/quickstart](https://monstergaming.ai/quickstart)"
+)
+CANONICAL_BLOG_LINE = "- **Blog:** [blog.monstergaming.ai](https://blog.monstergaming.ai)"
 
 
 @pytest.fixture(scope="module")
@@ -516,6 +525,24 @@ def test_profile_refresh_newsletter_line_matches_canonical_copy(profile_text):
         line for line in links_section.splitlines() if line.startswith("- **Newsletter:**")
     )
     assert newsletter_line == CANONICAL_NEWSLETTER_LINE
+
+
+@pytest.mark.parametrize(
+    "label,canonical_line",
+    [
+        ("Website", CANONICAL_WEBSITE_LINE),
+        ("Pricing", CANONICAL_PRICING_LINE),
+        ("Quickstart", CANONICAL_QUICKSTART_LINE),
+        ("Blog", CANONICAL_BLOG_LINE),
+    ],
+)
+def test_profile_refresh_links_section_lines_match_canonical_copy(profile_text, label, canonical_line):
+    """Partial link edits often break display-path URLs or drop pricing/free-tier copy."""
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    link_line = next(line for line in links_section.splitlines() if line.startswith(f"- **{label}:**"))
+    assert link_line == canonical_line
 
 
 def test_profile_refresh_legacy_capability_chain_not_in_intro(profile_text):

@@ -351,3 +351,23 @@ def test_bug_report_environment_placeholder_lists_all_official_runtimes():
     environment = next(field for field in template["body"] if field["id"] == "environment")
 
     assert environment["attributes"]["placeholder"] == "e.g., Node 22, Python 3.12, Rust 1.95"
+
+
+def test_bug_report_has_exactly_two_required_fields():
+    """Only description and reproduction block submit — extra required fields hurt triage."""
+    template = _load_template("bug_report.yml")
+    required_count = sum(
+        1 for field in template["body"] if field.get("validations", {}).get("required") is True
+    )
+
+    assert required_count == 2
+
+
+def test_feature_request_has_exactly_two_required_fields():
+    """Problem and solution are required; alternatives stay optional for lightweight requests."""
+    template = _load_template("feature_request.yml")
+    required_count = sum(
+        1 for field in template["body"] if field.get("validations", {}).get("required") is True
+    )
+
+    assert required_count == 2
