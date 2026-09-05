@@ -258,3 +258,29 @@ def test_validate_workflow_steps_omit_timeout_minutes():
 
     for step in workflow["jobs"]["test"]["steps"]:
         assert "timeout-minutes" not in step
+
+
+def test_validate_workflow_omits_defaults_run_shell_override():
+    """Explicit shell overrides can drift from ubuntu-latest defaults and break pip/pytest paths."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    defaults = workflow.get("defaults", {})
+    run_defaults = defaults.get("run", {})
+
+    assert "shell" not in run_defaults
+
+
+def test_validate_workflow_steps_omit_working_directory():
+    """Steps must run from repo root — working-directory overrides break relative test paths."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert "working-directory" not in step
+
+
+def test_validate_workflow_steps_omit_conditional_execution():
+    """Conditional steps can skip pytest on certain events and hide profile regressions."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert "if" not in step

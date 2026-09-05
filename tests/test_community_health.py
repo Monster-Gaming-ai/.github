@@ -409,3 +409,102 @@ def test_license_grant_sections_follow_definitions():
     patent_idx = license_text.index("   3. Grant of Patent License.")
 
     assert definitions_idx < copyright_idx < patent_idx
+
+
+def test_license_copyright_grant_includes_perpetual_worldwide_terms():
+    """Section 2 must preserve the irrevocable copyright grant — truncation removes downstream rights."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    copyright_grant = license_text.split("   3. Grant of Patent License.", maxsplit=1)[0]
+    copyright_grant = copyright_grant.split("   2. Grant of Copyright License.", maxsplit=1)[1]
+
+    for term in (
+        "perpetual",
+        "worldwide",
+        "non-exclusive",
+        "no-charge",
+        "royalty-free",
+        "irrevocable",
+        "reproduce, prepare Derivative Works of",
+        "publicly display, publicly perform, sublicense, and distribute",
+    ):
+        assert term in copyright_grant, f"missing Apache-2.0 copyright grant term: {term!r}"
+
+
+def test_license_patent_grant_includes_termination_on_litigation():
+    """Section 3 patent termination clause must stay intact — edits here change contributor obligations."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    patent_grant = license_text.split("   4. Redistribution.", maxsplit=1)[0]
+    patent_grant = patent_grant.split("   3. Grant of Patent License.", maxsplit=1)[1]
+
+    for phrase in (
+        "institute patent litigation against any entity",
+        "cross-claim or counterclaim in a lawsuit",
+        "contributory patent infringement",
+        "then any patent licenses",
+        "granted to You under this License for that Work shall terminate",
+        "as of the date such litigation is filed",
+    ):
+        assert phrase in patent_grant, f"missing Apache-2.0 patent termination language: {phrase!r}"
+
+
+def test_license_submission_of_contributions_preserves_default_license_terms():
+    """Section 5 binds inbound contributions to Apache-2.0 unless explicitly stated otherwise."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    submission = license_text.split("   6. Trademarks.", maxsplit=1)[0]
+    submission = submission.split("   5. Submission of Contributions.", maxsplit=1)[1]
+
+    assert "Unless You explicitly state otherwise" in submission
+    assert "shall be under the terms and conditions of" in submission
+    assert "this License, without any additional terms or conditions" in submission
+
+
+def test_license_trademarks_section_restricts_product_name_use():
+    """Section 6 must keep trademark restrictions — permissive edits create brand misuse risk."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    trademarks = license_text.split("   7. Disclaimer of Warranty.", maxsplit=1)[0]
+    trademarks = trademarks.split("   6. Trademarks.", maxsplit=1)[1]
+
+    assert "This License does not grant permission to use the trade" in trademarks
+    assert "names, trademarks, service marks, or product names of the Licensor" in trademarks
+    assert "except as required for reasonable and customary use in describing the" in trademarks
+    assert "origin of the Work and reproducing the content of the NOTICE file" in trademarks
+
+
+def test_license_disclaimer_of_warranty_uses_as_is_basis():
+    """Section 7 warranty disclaimer must stay intact — notice block alone is insufficient."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    disclaimer = license_text.split("   8. Limitation of Liability.", maxsplit=1)[0]
+    disclaimer = disclaimer.split("   7. Disclaimer of Warranty.", maxsplit=1)[1]
+
+    assert 'on an "AS IS" BASIS' in disclaimer
+    assert "WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND" in disclaimer
+    assert "FITNESS FOR A" in disclaimer
+    assert "PARTICULAR PURPOSE" in disclaimer
+
+
+def test_license_limitation_of_liability_preserves_damage_exclusions():
+    """Section 8 caps contributor liability — missing clauses weaken downstream protections."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    liability = license_text.split("   9. Accepting Warranty or Additional Liability.", maxsplit=1)[0]
+    liability = liability.split("   8. Limitation of Liability.", maxsplit=1)[1]
+
+    for phrase in (
+        "In no event and under no legal theory",
+        "direct, indirect, special",
+        "incidental, or consequential damages",
+        "loss of goodwill",
+        "has been advised of the possibility of such damages",
+    ):
+        assert phrase in liability, f"missing Apache-2.0 liability exclusion: {phrase!r}"
+
+
+def test_license_warranty_acceptance_requires_indemnification():
+    """Section 9 indemnification clause must stay intact for optional warranty offers."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    warranty = license_text.split("END OF TERMS AND CONDITIONS", maxsplit=1)[0]
+    warranty = warranty.split("   9. Accepting Warranty or Additional Liability.", maxsplit=1)[1]
+
+    assert "acceptance of support, warranty, indemnity" in warranty
+    assert "indemnify," in warranty
+    assert "defend, and hold each Contributor harmless" in warranty
+    assert "on Your own behalf and on Your sole responsibility" in warranty
