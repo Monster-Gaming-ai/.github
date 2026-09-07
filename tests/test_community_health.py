@@ -400,6 +400,57 @@ def test_license_redistribution_section_includes_required_conditions():
         assert condition in redistribution, f"missing Apache-2.0 redistribution condition: {condition!r}"
 
 
+def test_license_redistribution_permits_any_medium_and_form():
+    """Section 4 opening must preserve modification and Source/Object form permissions."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "Work or Derivative Works thereof in any medium, with or without" in redistribution
+    assert "modifications, and in Source or Object form, provided that You" in redistribution
+
+
+def test_license_redistribution_preserves_modification_license_clause():
+    """Section 4 must preserve the derivative-works modification license carve-out."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    for phrase in (
+        "You may add Your own copyright statement to Your modifications and",
+        "may provide additional or different license terms and conditions",
+        "for use, reproduction, or distribution of Your modifications, or",
+        "for any such Derivative Works as a whole, provided Your use,",
+        "reproduction, and distribution of the Work otherwise complies with",
+        "the conditions stated in this License.",
+    ):
+        assert phrase in redistribution, (
+            f"missing Apache-2.0 modification license clause: {phrase!r}"
+        )
+
+
+def test_license_redistribution_preserves_derivative_attribution_notices_clause():
+    """Section 4 must preserve optional attribution notices that cannot modify the License."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "You may add Your own attribution" in redistribution
+    assert "notices within Derivative Works that You distribute" in redistribution
+    assert "such additional attribution notices cannot be construed" in redistribution
+    assert "as modifying the License." in redistribution
+
+
+def test_license_redistribution_notice_file_does_not_modify_license():
+    """Section 4 (d) NOTICE file contents must remain informational only."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "of the NOTICE file are for informational purposes only and" in redistribution
+    assert "do not modify the License." in redistribution
+
+
 def test_license_grant_sections_follow_definitions():
     """Numbered sections must stay in canonical order — reordering breaks compliance tooling."""
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
@@ -409,6 +460,25 @@ def test_license_grant_sections_follow_definitions():
     patent_idx = license_text.index("   3. Grant of Patent License.")
 
     assert definitions_idx < copyright_idx < patent_idx
+
+
+def test_license_numbered_sections_follow_full_canonical_order():
+    """Sections 1–9 must stay in Apache-2.0 canonical order for compliance parsers."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    section_titles = (
+        "   1. Definitions.",
+        "   2. Grant of Copyright License.",
+        "   3. Grant of Patent License.",
+        "   4. Redistribution.",
+        "   5. Submission of Contributions.",
+        "   6. Trademarks.",
+        "   7. Disclaimer of Warranty.",
+        "   8. Limitation of Liability.",
+        "   9. Accepting Warranty or Additional Liability.",
+    )
+    indices = [license_text.index(title) for title in section_titles]
+    assert indices == sorted(indices)
 
 
 def test_license_copyright_grant_includes_perpetual_worldwide_terms():
@@ -504,6 +574,8 @@ def test_license_warranty_acceptance_requires_indemnification():
     warranty = license_text.split("END OF TERMS AND CONDITIONS", maxsplit=1)[0]
     warranty = warranty.split("   9. Accepting Warranty or Additional Liability.", maxsplit=1)[1]
 
+    assert "While redistributing" in warranty
+    assert "the Work or Derivative Works thereof, You may choose to offer" in warranty
     assert "acceptance of support, warranty, indemnity" in warranty
     assert "indemnify," in warranty
     assert "defend, and hold each Contributor harmless" in warranty

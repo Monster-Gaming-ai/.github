@@ -105,6 +105,22 @@ def test_validate_workflow_uses_setup_python_v5():
     assert setup_python["uses"] == "actions/setup-python@v5"
 
 
+def test_validate_workflow_actions_pin_major_version_tags():
+    """Floating action refs (@main) break CI silently when upstream releases change."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    action_steps = [
+        step["uses"]
+        for step in workflow["jobs"]["test"]["steps"]
+        if step.get("uses", "").startswith("actions/")
+    ]
+
+    assert action_steps, "workflow must use GitHub Actions for checkout and setup"
+    for action_ref in action_steps:
+        assert "@v" in action_ref, f"action must pin a major version tag, not float: {action_ref!r}"
+        assert "@main" not in action_ref
+        assert "@master" not in action_ref
+
+
 def test_validate_workflow_pytest_uses_quiet_flag():
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
     run_commands = [
