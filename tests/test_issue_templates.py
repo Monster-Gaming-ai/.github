@@ -382,3 +382,12 @@ def test_issue_templates_use_only_input_and_textarea_fields(filename):
         assert field["type"] in {"textarea", "input"}, (
             f"{filename} field {field['id']!r} must be textarea or input, not {field['type']!r}"
         )
+
+
+def test_issue_template_directory_has_no_config_yml():
+    """config.yml can enable blank issues or contact links that bypass structured triage."""
+    config_path = ISSUE_TEMPLATE_DIR / "config.yml"
+    template_files = sorted(path.name for path in ISSUE_TEMPLATE_DIR.glob("*.yml"))
+
+    assert not config_path.exists(), "issue template config.yml must not override form-only triage"
+    assert template_files == ["bug_report.yml", "feature_request.yml"]

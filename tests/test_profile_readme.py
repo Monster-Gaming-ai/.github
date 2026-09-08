@@ -202,6 +202,30 @@ def test_profile_readme_mentions_free_tier_pricing(profile_text):
     assert "free tier available" in links_section
 
 
+def test_profile_readme_free_tier_claim_appears_once_in_links_only(profile_text):
+    """Pricing messaging must not duplicate into offerings or intro by partial edits."""
+    intro = profile_text.split("## What We Build", maxsplit=1)[0]
+    offerings = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings = offerings.split("## Official SDKs", maxsplit=1)[0]
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+
+    assert profile_text.count("free tier available") == 1
+    assert "free tier available" in links_section
+    assert "free tier available" not in intro
+    assert "free tier available" not in offerings
+
+
+def test_profile_readme_loki_code_specifies_c11_not_cpp(profile_text):
+    """Loki Code must advertise C11 — typos to C++ or bare C misrepresent the product."""
+    loki_line = next(line for line in profile_text.splitlines() if "[Loki Code]" in line)
+
+    assert "built in C11" in loki_line
+    assert "C++" not in profile_text
+    assert "built in C," not in profile_text
+    assert "built in C " not in profile_text
+
+
 def test_profile_readme_has_org_title(profile_text):
     assert profile_text.startswith("# Monster Gaming\n")
 

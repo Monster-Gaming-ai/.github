@@ -300,3 +300,56 @@ def test_validate_workflow_steps_omit_conditional_execution():
 
     for step in workflow["jobs"]["test"]["steps"]:
         assert "if" not in step
+
+
+def test_validate_workflow_has_exactly_four_steps():
+    """Partial reverts can drop install or pytest steps while leaving checkout/setup intact."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert len(workflow["jobs"]["test"]["steps"]) == 4
+
+
+def test_validate_workflow_checkout_omits_with_overrides():
+    """Checkout overrides can cause shallow clones or credential persistence drift."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    checkout = next(
+        step for step in workflow["jobs"]["test"]["steps"]
+        if step.get("uses", "").startswith("actions/checkout")
+    )
+
+    assert "with" not in checkout
+
+
+def test_validate_workflow_uses_only_checkout_and_setup_python_actions():
+    """Only pinned GitHub Actions should run — third-party actions add supply-chain risk."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    action_steps = [
+        step["uses"]
+        for step in workflow["jobs"]["test"]["steps"]
+        if "uses" in step
+    ]
+
+    assert action_steps == ["actions/checkout@v4", "actions/setup-python@v5"]
+
+
+def test_validate_workflow_pytest_runs_full_suite_without_path_filters():
+    """Narrowing pytest scope silently drops entire test modules while CI stays green."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    pytest_step = next(
+        step for step in workflow["jobs"]["test"]["steps"]
+        if step.get("name") == "Run validation tests"
+    )
+
+    run_command = pytest_step["run"].strip()
+    assert run_command == "pytest -q"
+    assert "tests/" not in run_command
+    assert "-k" not in run_command
+    assert "--ignore" not in run_command
+
+
+def test_validate_workflow_omits_job_level_permissions():
+    """Job-level permissions can override workflow scopes and widen GITHUB_TOKEN access."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    test_job = workflow["jobs"]["test"]
+
+    assert "permissions" not in test_job
