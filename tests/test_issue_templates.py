@@ -258,6 +258,27 @@ def test_bug_report_environment_placeholder_covers_all_official_sdks():
         assert runtime_hint in placeholder
 
 
+def test_bug_report_environment_placeholder_matches_profile_sdk_languages():
+    """Bug triage hints must stay aligned with the three SDKs advertised on the org profile."""
+    profile = (REPO_ROOT / "profile" / "README.md").read_text(encoding="utf-8")
+    sdk_section = profile.split("## Official SDKs", maxsplit=1)[1].split("## Links", maxsplit=1)[0]
+
+    template = _load_template("bug_report.yml")
+    environment = next(field for field in template["body"] if field["id"] == "environment")
+    placeholder = environment["attributes"].get("placeholder", "")
+
+    sdk_runtime_pairs = (
+        ("TypeScript / JavaScript", "Node"),
+        ("Python", "Python"),
+        ("Rust", "Rust"),
+    )
+    for language, runtime in sdk_runtime_pairs:
+        assert language in sdk_section, f"org profile must document {language} SDK"
+        assert runtime in placeholder, (
+            f"bug report environment placeholder must reference {runtime} for {language} reporters"
+        )
+
+
 def test_feature_request_template_metadata():
     template = _load_template("feature_request.yml")
 

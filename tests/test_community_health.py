@@ -735,6 +735,60 @@ def test_license_redistribution_notice_file_preserves_display_placement_clause()
     assert "wherever such third-party notices normally appear" in redistribution
 
 
+def test_license_redistribution_condition_a_preserves_license_copy_requirement():
+    """Section 4(a) requires passing the License to recipients — common truncation in forks."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "give any other recipients of the Work or" in redistribution
+    assert "Derivative Works a copy of this License; and" in redistribution
+
+
+def test_license_redistribution_condition_c_preserves_attribution_notice_retention():
+    """Section 4(c) attribution retention clause protects upstream notices in derivative works."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "all copyright, patent, trademark, and" in redistribution
+    assert "attribution notices from the Source form of the Work," in redistribution
+    assert "excluding those notices that do not pertain to any part of" in redistribution
+
+
+def test_license_redistribution_condition_d_preserves_notice_file_copy_requirement():
+    """Section 4(d) requires distributing NOTICE attribution — dropping it breaks Apache compliance."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert 'If the Work includes a "NOTICE" text file as part of its' in redistribution
+    assert "include a readable copy of the attribution notices contained" in redistribution
+
+
+def test_license_redistribution_condition_d_preserves_notice_file_placement_paths():
+    """Section 4(d) must list all NOTICE placement options — partial lists drop valid paths."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "within a NOTICE text file distributed" in redistribution
+    assert "as part of the Derivative Works;" in redistribution
+    assert "within the Source form or" in redistribution
+    assert "documentation, if provided along with the Derivative Works;" in redistribution
+
+
+def test_license_redistribution_condition_d_preserves_addendum_attribution_clause():
+    """Section 4(d) addendum clause prevents attribution notices from being construed as relicensing."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = license_text.split("   5. Submission of Contributions.", maxsplit=1)[0]
+    redistribution = redistribution.split("   4. Redistribution.", maxsplit=1)[1]
+
+    assert "alongside" in redistribution
+    assert "or as an addendum to the NOTICE text from the Work, provided" in redistribution
+    assert "that such additional attribution notices cannot be construed" in redistribution
+
+
 def test_license_disclaimer_attributes_warranty_to_each_contributor():
     """Section 7 per-contributor framing distinguishes Licensor vs Contributor liability."""
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
