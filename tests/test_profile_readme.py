@@ -602,6 +602,14 @@ def test_org_profile_readme_lives_at_github_required_path():
     assert path.is_file(), "org profile must be at profile/README.md for GitHub to display it"
 
 
+def test_org_profile_directory_contains_only_readme():
+    """GitHub org profiles render only profile/README.md — extra files are ignored and confuse editors."""
+    profile_dir = REPO_ROOT / "profile"
+    entries = sorted(path.name for path in profile_dir.iterdir())
+
+    assert entries == ["README.md"]
+
+
 def test_profile_readme_non_unreal_engines_remain_plain_text_in_intro(profile_text):
     """Only Unreal Engine is hyperlinked; Unity, Godot, and bespoke stay plain text."""
     intro = profile_text.split("## What We Build", maxsplit=1)[0]

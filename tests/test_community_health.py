@@ -330,6 +330,17 @@ def test_gitignore_lists_exactly_three_patterns_in_order():
     assert lines == ["__pycache__/", "*.py[cod]", ".pytest_cache/"]
 
 
+def test_gitignore_does_not_exclude_tests_directory():
+    """Accidental tests/ ignore patterns would make CI pass with zero guards."""
+    gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
+    lines = [line.strip() for line in gitignore.splitlines() if line.strip() and not line.startswith("#")]
+
+    for pattern in lines:
+        assert pattern not in {"tests/", "tests", "/tests", "/tests/"}, (
+            f".gitignore must not exclude the validation suite: {pattern!r}"
+        )
+
+
 def test_pull_request_template_tests_checklist_uses_exact_wording():
     template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
     checklist_items = [line for line in template.splitlines() if line.startswith("- [ ]")]
@@ -426,6 +437,18 @@ def test_license_redistribution_conditions_appear_in_abcd_order():
     indices = [redistribution.index(marker) for marker, _ in REDISTRIBUTION_CONDITIONS]
 
     assert indices == sorted(indices)
+
+
+def test_license_redistribution_section_has_exactly_four_lettered_markers():
+    """Section 4 must contain exactly (a)–(d) — extra or missing markers break compliance tooling."""
+    redistribution = _license_redistribution_section()
+    markers = [marker for marker, _ in REDISTRIBUTION_CONDITIONS]
+
+    assert redistribution.count("(a)") == 1
+    assert redistribution.count("(b)") == 1
+    assert redistribution.count("(c)") == 1
+    assert redistribution.count("(d)") == 1
+    assert all(redistribution.count(marker) == 1 for marker in markers)
 
 
 def test_license_redistribution_preserves_meet_following_conditions_preamble():
@@ -952,3 +975,22 @@ def test_pull_request_template_review_sections_are_empty_placeholders():
 
     assert what_section.strip() == ""
     assert how_section.strip() == ""
+
+
+def test_contributing_test_requirement_aligns_with_validate_workflow():
+    """Quick Start step 4 must match an executable CI gate — wording-only checks miss missing workflows."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    workflow_path = REPO_ROOT / ".github" / "workflows" / "validate.yml"
+
+    assert "Ensure tests pass" in contributing
+    assert workflow_path.is_file(), "validate.yml must exist to gate the tests CONTRIBUTING requires"
+    assert "pytest" in workflow_path.read_text(encoding="utf-8")
+
+
+def test_pull_request_spdx_checklist_aligns_with_contributing_guidelines():
+    """PR and CONTRIBUTING SPDX requirements must stay paired — drift leaves contributors unsure."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+
+    assert "Apache-2.0 SPDX header" in contributing
+    assert "SPDX headers present on new files" in template

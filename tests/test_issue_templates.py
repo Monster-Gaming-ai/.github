@@ -280,6 +280,34 @@ def test_bug_report_environment_placeholder_matches_profile_sdk_languages():
         )
 
 
+def test_bug_report_environment_placeholder_runtime_order_matches_sdk_table():
+    """Runtime hints must follow SDK table order — reordering breaks reporter expectations."""
+    profile = (REPO_ROOT / "profile" / "README.md").read_text(encoding="utf-8")
+    sdk_section = profile.split("## Official SDKs", maxsplit=1)[1].split("## Links", maxsplit=1)[0]
+    sdk_rows = [
+        line
+        for line in sdk_section.splitlines()
+        if line.startswith("|") and "Language" not in line and "---" not in line
+    ]
+    sdk_languages = [row.split("|", maxsplit=3)[1].strip() for row in sdk_rows]
+
+    template = _load_template("bug_report.yml")
+    environment = next(field for field in template["body"] if field["id"] == "environment")
+    placeholder = environment["attributes"].get("placeholder", "")
+
+    runtime_by_language = {
+        "TypeScript / JavaScript": "Node",
+        "Python": "Python",
+        "Rust": "Rust",
+    }
+    expected_runtimes = [runtime_by_language[language] for language in sdk_languages]
+    placeholder_runtimes = [runtime for runtime in expected_runtimes if runtime in placeholder]
+
+    assert placeholder_runtimes == expected_runtimes
+    assert placeholder.index(placeholder_runtimes[0]) < placeholder.index(placeholder_runtimes[1])
+    assert placeholder.index(placeholder_runtimes[1]) < placeholder.index(placeholder_runtimes[2])
+
+
 def test_bug_report_environment_python_version_matches_ci_workflow():
     """Bug triage Python hint must match the CI validation Python pin."""
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))

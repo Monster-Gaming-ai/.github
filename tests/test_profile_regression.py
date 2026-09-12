@@ -57,6 +57,13 @@ CANONICAL_QUICKSTART_LINE = (
     "- **Quickstart:** [monstergaming.ai/quickstart](https://monstergaming.ai/quickstart)"
 )
 CANONICAL_BLOG_LINE = "- **Blog:** [blog.monstergaming.ai](https://blog.monstergaming.ai)"
+CANONICAL_LINK_LINES = (
+    CANONICAL_WEBSITE_LINE,
+    CANONICAL_PRICING_LINE,
+    CANONICAL_QUICKSTART_LINE,
+    CANONICAL_BLOG_LINE,
+    CANONICAL_NEWSLETTER_LINE,
+)
 
 
 @pytest.fixture(scope="module")
@@ -81,6 +88,15 @@ def test_profile_refresh_replaced_monster_gpt_routing_copy(profile_text):
 
     assert PRE_REFRESH_AGENT_ROUTING not in profile_text
     assert "auto-routes to specialist agents across 30+ game dev disciplines" in offerings
+
+
+def test_profile_refresh_links_section_matches_all_five_canonical_lines(profile_text):
+    """4618966 fixed link order — per-label checks miss middle reordering (e.g. Blog before Quickstart)."""
+    links_section = profile_text.split("## Links", maxsplit=1)[1]
+    links_section = links_section.split("A [Luxedeum]", maxsplit=1)[0]
+    link_lines = [line for line in links_section.splitlines() if line.startswith("- **")]
+
+    assert link_lines == list(CANONICAL_LINK_LINES)
 
 
 def test_profile_refresh_website_is_first_link(profile_text):
