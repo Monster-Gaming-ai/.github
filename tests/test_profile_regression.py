@@ -64,6 +64,12 @@ CANONICAL_LINK_LINES = (
     CANONICAL_BLOG_LINE,
     CANONICAL_NEWSLETTER_LINE,
 )
+CANONICAL_OFFERING_LINES = (
+    CANONICAL_MONSTER_GPT_OFFERING,
+    CANONICAL_OPENAI_API_OFFERING,
+    CANONICAL_ENGINE_AWARE_OFFERING,
+    CANONICAL_LOKI_CODE_OFFERING,
+)
 
 
 @pytest.fixture(scope="module")
@@ -97,6 +103,15 @@ def test_profile_refresh_links_section_matches_all_five_canonical_lines(profile_
     link_lines = [line for line in links_section.splitlines() if line.startswith("- **")]
 
     assert link_lines == list(CANONICAL_LINK_LINES)
+
+
+def test_profile_refresh_product_offerings_match_all_four_canonical_lines(profile_text):
+    """4618966 offerings refresh — per-line checks miss bulk reorder or em-dash drift across bullets."""
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+    offering_lines = [line for line in offerings_section.splitlines() if line.startswith("- **[")]
+
+    assert offering_lines == list(CANONICAL_OFFERING_LINES)
 
 
 def test_profile_refresh_website_is_first_link(profile_text):

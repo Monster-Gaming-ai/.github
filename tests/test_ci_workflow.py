@@ -385,3 +385,10 @@ def test_validate_workflow_setup_python_with_has_only_required_keys():
     }
     assert setup_python["with"]["python-version"] == "3.12"
     assert setup_python["with"]["cache"] == "pip"
+
+
+def test_validate_workflow_test_job_has_only_expected_keys():
+    """Job-level container/services/env keys can change CI behavior while pytest still appears to run."""
+    workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert set(workflow["jobs"]["test"].keys()) == {"runs-on", "steps"}

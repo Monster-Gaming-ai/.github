@@ -994,3 +994,75 @@ def test_pull_request_spdx_checklist_aligns_with_contributing_guidelines():
 
     assert "Apache-2.0 SPDX header" in contributing
     assert "SPDX headers present on new files" in template
+
+
+CANONICAL_APACHE_NOTICE_BLOCK = (
+    "\n\n   Copyright 2026 Luxedeum, LLC d/b/a Monster Gaming\n\n"
+    '   Licensed under the Apache License, Version 2.0 (the "License");\n'
+    "   you may not use this file except in compliance with the License.\n"
+    "   You may obtain a copy of the License at\n\n"
+    "       http://www.apache.org/licenses/LICENSE-2.0\n\n"
+    "   Unless required by applicable law or agreed to in writing, software\n"
+    '   distributed under the License is distributed on an "AS IS" BASIS,\n'
+    "   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n"
+    "   See the License for the specific language governing permissions and\n"
+    "   limitations under the License.\n"
+)
+
+CANONICAL_PR_CHECKLIST_ITEMS = (
+    "- [ ] Tests pass locally",
+    "- [ ] Documentation updated (if applicable)",
+    "- [ ] SPDX headers present on new files",
+)
+
+
+def test_license_notice_block_matches_canonical_apache_text():
+    """Fragment checks miss dropped URL lines or swapped http/https in the notice block."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    notice_block = license_text.split("END OF TERMS AND CONDITIONS", maxsplit=1)[1]
+
+    assert notice_block == CANONICAL_APACHE_NOTICE_BLOCK
+
+
+def test_license_copyright_holder_aligns_with_profile_luxedeum_attribution():
+    """Copyright holder and public org footer must stay paired across legal and marketing surfaces."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    profile_text = (REPO_ROOT / "profile" / "README.md").read_text(encoding="utf-8")
+
+    assert "Copyright 2026 Luxedeum, LLC d/b/a Monster Gaming" in license_text
+    assert "A [Luxedeum](https://luxedeum.com) company." in profile_text
+    assert "Luxedeum" in license_text and "Luxedeum" in profile_text
+    assert "Monster Gaming" in license_text and "Monster Gaming" in profile_text
+
+
+def test_pull_request_template_checklist_matches_canonical_order():
+    """Per-item wording checks miss reordering that changes contributor review expectations."""
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    checklist_items = [line for line in template.splitlines() if line.startswith("- [ ]")]
+
+    assert checklist_items == list(CANONICAL_PR_CHECKLIST_ITEMS)
+
+
+def test_pull_request_tests_checklist_aligns_with_contributing_and_workflow():
+    """Quick Start, PR template, and CI must stay a three-way test gate — partial drift hides regressions."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    workflow = (REPO_ROOT / ".github" / "workflows" / "validate.yml").read_text(encoding="utf-8")
+
+    quick_start = contributing.split("## Quick Start", maxsplit=1)[1]
+    quick_start = quick_start.split("## Guidelines", maxsplit=1)[0]
+    steps = [line for line in quick_start.splitlines() if line.strip()[:1].isdigit()]
+
+    assert steps[3] == "4. Ensure tests pass"
+    assert steps[4] == "5. Submit a pull request"
+    assert "- [ ] Tests pass locally" in template
+    assert "pytest -q" in workflow
+
+
+def test_contributing_contact_email_stays_out_of_profile_readme():
+    """Support email belongs in CONTRIBUTING only — accidental profile exposure is a privacy regression."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    profile_text = (REPO_ROOT / "profile" / "README.md").read_text(encoding="utf-8")
+
+    assert "dev@monstergaming.ai" in contributing
+    assert "dev@monstergaming.ai" not in profile_text

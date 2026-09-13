@@ -390,6 +390,18 @@ def test_profile_readme_product_offerings_maintain_canonical_order(profile_text)
     assert headers == list(CANONICAL_OFFERING_HEADERS)
 
 
+def test_profile_readme_offerings_section_contains_no_extra_prose(profile_text):
+    """Offering count checks miss injected marketing sentences between canonical bullets."""
+    offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
+    offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
+
+    for line in offerings_section.splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        assert stripped.startswith("- **["), f"unexpected prose in offerings section: {line!r}"
+
+
 def test_profile_readme_monster_gpt_leads_with_flagship_claim(profile_text):
     offerings_section = profile_text.split("## What We Build", maxsplit=1)[1]
     offerings_section = offerings_section.split("## Official SDKs", maxsplit=1)[0]
