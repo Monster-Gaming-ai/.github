@@ -493,3 +493,32 @@ def test_issue_template_required_fields_include_validations_block():
     for field_id in ("problem", "solution"):
         field = next(field for field in feature_request["body"] if field["id"] == field_id)
         assert field.get("validations", {}).get("required") is True
+
+
+@pytest.mark.parametrize("filename", TEMPLATE_FILES.keys())
+def test_issue_template_body_fields_have_only_expected_keys(filename):
+    """Typos like validation: (singular) silently drop GitHub form enforcement."""
+    template = _load_template(filename)
+
+    for field in template["body"]:
+        allowed = {"type", "id", "attributes"}
+        if field.get("validations", {}).get("required") is True:
+            allowed.add("validations")
+        unexpected = set(field.keys()) - allowed
+        assert not unexpected, f"unexpected keys on {field['id']}: {sorted(unexpected)}"
+
+
+@pytest.mark.parametrize(
+    "filename,required_ids",
+    [
+        ("bug_report.yml", {"description", "reproduction"}),
+        ("feature_request.yml", {"problem", "solution"}),
+    ],
+)
+def test_issue_template_required_validations_are_exact_shape(filename, required_ids):
+    """Extra validation keys may be ignored or break GitHub issue form rendering."""
+    template = _load_template(filename)
+
+    for field in template["body"]:
+        if field["id"] in required_ids:
+            assert field["validations"] == {"required": True}

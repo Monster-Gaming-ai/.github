@@ -608,6 +608,11 @@ def test_profile_readme_newsletter_name_stays_in_links_section(profile_text):
     assert "Man in the Machine" in links_section
 
 
+def test_org_profile_repo_has_no_root_readme():
+    """Root README.md does not update the org profile — only profile/README.md does."""
+    assert not (REPO_ROOT / "README.md").exists()
+
+
 def test_org_profile_readme_lives_at_github_required_path():
     """GitHub org profiles require profile/README.md at the repository root."""
     path = REPO_ROOT / "profile" / "README.md"

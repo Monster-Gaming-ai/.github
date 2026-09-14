@@ -214,6 +214,13 @@ def test_license_copyright_notice_follows_end_of_terms():
     assert "limitations under the License." in notice_block
 
 
+def test_license_end_of_terms_marker_appears_once():
+    """Duplicate or missing END marker indicates a bad merge at the notice boundary."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+
+    assert license_text.count("END OF TERMS AND CONDITIONS") == 1
+
+
 def test_contributing_license_section_references_apache():
     contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
     license_section = contributing.split("## License", maxsplit=1)[1]
@@ -339,6 +346,28 @@ def test_gitignore_does_not_exclude_tests_directory():
         assert pattern not in {"tests/", "tests", "/tests", "/tests/"}, (
             f".gitignore must not exclude the validation suite: {pattern!r}"
         )
+
+
+def test_gitignore_does_not_exclude_community_health_or_ci_paths():
+    """Broad ignore patterns would hide LICENSE, templates, or CI config from git."""
+    gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
+    patterns = {
+        line.strip()
+        for line in gitignore.splitlines()
+        if line.strip() and not line.startswith("#")
+    }
+    forbidden = {
+        "LICENSE",
+        "CONTRIBUTING.md",
+        "profile/",
+        "profile/README.md",
+        ".github/",
+        "tests/",
+        "requirements-dev.txt",
+        "*.md",
+        "*.yml",
+    }
+    assert not (patterns & forbidden)
 
 
 def test_pull_request_template_tests_checklist_uses_exact_wording():
@@ -1066,3 +1095,19 @@ def test_contributing_contact_email_stays_out_of_profile_readme():
 
     assert "dev@monstergaming.ai" in contributing
     assert "dev@monstergaming.ai" not in profile_text
+
+
+EXPECTED_COMMUNITY_HEALTH_PATHS = (
+    "LICENSE",
+    "CONTRIBUTING.md",
+    "profile/README.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+)
+
+
+def test_community_health_files_exist_at_expected_paths():
+    """LUX-1271 health files must remain present — content tests fail opaquely when a file is deleted."""
+    for rel_path in EXPECTED_COMMUNITY_HEALTH_PATHS:
+        assert (REPO_ROOT / rel_path).is_file(), f"missing community health file: {rel_path}"

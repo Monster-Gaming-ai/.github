@@ -167,6 +167,13 @@ def test_validate_workflow_is_sole_ci_gate():
     assert workflow_files == ["validate.yml"]
 
 
+def test_github_directory_has_only_expected_entries():
+    """Unexpected .github files (dependabot, CODEOWNERS) bypass or duplicate CI gates."""
+    entries = sorted(path.name for path in (REPO_ROOT / ".github").iterdir())
+
+    assert entries == ["ISSUE_TEMPLATE", "PULL_REQUEST_TEMPLATE.md", "workflows"]
+
+
 EXPECTED_TEST_MODULES = (
     "test_ci_workflow.py",
     "test_community_health.py",
