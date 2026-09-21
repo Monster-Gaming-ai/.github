@@ -1,6 +1,7 @@
 """Validate org profile README content from recent profile refresh commits."""
 
 import re
+from collections import Counter
 from pathlib import Path
 
 import pytest
@@ -279,6 +280,50 @@ def test_profile_readme_sdk_table_has_valid_markdown_structure(profile_text):
     assert "| Language | Package | Install |" in sdk_section
     assert "|----------|---------|---------|" in sdk_section
     assert sdk_section.count("|") >= 16, "SDK table should have header plus three language rows"
+
+
+CANONICAL_SDK_TABLE_HEADER = "| Language | Package | Install |"
+CANONICAL_SDK_TABLE_SEPARATOR = "|----------|---------|---------|"
+SDK_TABLE_COLUMN_COUNT = 3
+
+
+def _sdk_table_rows(profile_text: str) -> list[str]:
+    sdk_section = _sdk_section(profile_text)
+    return [line for line in sdk_section.splitlines() if line.strip().startswith("|")]
+
+
+def test_profile_readme_sdk_table_header_and_separator_are_exact_lines(profile_text):
+    """Extra header/separator columns break GitHub table rendering while data rows stay canonical."""
+    rows = _sdk_table_rows(profile_text)
+
+    assert rows[0] == CANONICAL_SDK_TABLE_HEADER
+    assert rows[1] == CANONICAL_SDK_TABLE_SEPARATOR
+
+
+def test_profile_readme_sdk_table_rows_have_uniform_column_count(profile_text):
+    """Header/separator column drift passes substring checks when data rows are unchanged."""
+    column_counts = [len(row.split("|")) - 2 for row in _sdk_table_rows(profile_text)]
+
+    assert column_counts == [SDK_TABLE_COLUMN_COUNT] * len(column_counts)
+
+
+def test_profile_readme_sdk_table_has_no_blank_lines_between_rows(profile_text):
+    """Blank lines inside the SDK table split rows and break install-doc rendering on GitHub."""
+    sdk_section = _sdk_section(profile_text)
+    table_lines = [line for line in sdk_section.splitlines() if line.strip().startswith("|")]
+    line_numbers = [
+        index
+        for index, line in enumerate(sdk_section.splitlines())
+        if line.strip().startswith("|")
+    ]
+
+    for index in range(len(line_numbers) - 1):
+        gap_start = line_numbers[index] + 1
+        gap_end = line_numbers[index + 1]
+        gap_lines = sdk_section.splitlines()[gap_start:gap_end]
+        assert gap_lines == [], (
+            f"SDK table must not contain blank lines between rows near {table_lines[index]!r}"
+        )
 
 
 def test_profile_readme_preserves_agent_routing_intro(profile_text):
@@ -1394,6 +1439,28 @@ PRICING_URL = "https://monstergaming.ai/pricing"
 
 def _link_targets(profile_text: str) -> list[str]:
     return re.findall(r"\]\((https?://[^)]+)\)", profile_text)
+
+
+EXPECTED_LINK_TARGET_COUNTS = Counter(
+    {
+        MAIN_SITE_URL: 4,
+        "https://monstergaming.ai/quickstart": 2,
+        PRICING_URL: 1,
+        BLOG_HOMEPAGE_URL: 1,
+        NEWSLETTER_URL: 1,
+        LOKI_CODE_BLOG_URL: 1,
+        "https://luxedeum.com": 1,
+        **{url: 1 for url in SDK_REGISTRY_URLS},
+    }
+)
+
+
+def test_profile_readme_link_target_inventory_matches_expected(profile_text):
+    """Full href budget catches smuggled domains or duplicate funnels missed by per-URL tests."""
+    targets = _link_targets(profile_text)
+
+    assert targets, "profile must contain markdown link targets"
+    assert Counter(targets) == EXPECTED_LINK_TARGET_COUNTS
 
 
 def test_profile_readme_main_site_url_appears_four_times_as_link_target(profile_text):
