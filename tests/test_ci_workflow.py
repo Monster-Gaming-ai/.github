@@ -61,6 +61,12 @@ def test_validate_workflow_has_display_name():
     assert workflow.get("name") == "Validate org profile"
 
 
+def test_validate_workflow_declares_lowercase_on_key_for_github_actions():
+    """GitHub Actions requires the literal `on:` key; PyYAML treats `On:` as boolean True so parsed checks miss it."""
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert re.search(r"^on:\s*$", workflow_text, re.MULTILINE)
+
+
 def test_validate_workflow_uses_checkout_and_pip_cache_path():
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
     steps = workflow["jobs"]["test"]["steps"]
