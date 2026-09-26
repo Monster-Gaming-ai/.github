@@ -543,3 +543,78 @@ def test_issue_template_required_validations_are_exact_shape(filename, required_
     for field in template["body"]:
         if field["id"] in required_ids:
             assert field["validations"] == {"required": True}
+
+
+CANONICAL_BUG_REPORT_YAML = """\
+name: Bug Report
+description: Report a bug in this SDK
+labels: ["bug"]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: Describe the bug
+      description: A clear description of what the bug is.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: How can we reproduce the behavior?
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+      description: What did you expect to happen?
+  - type: input
+    id: version
+    attributes:
+      label: SDK Version
+      placeholder: e.g., 0.0.5
+  - type: input
+    id: environment
+    attributes:
+      label: Environment
+      placeholder: e.g., Node 22, Python 3.12, Rust 1.95
+"""
+
+CANONICAL_FEATURE_REQUEST_YAML = """\
+name: Feature Request
+description: Suggest a new feature or improvement
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem does this feature solve?
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like this to work?
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Any other approaches you've thought about?
+"""
+
+
+def test_bug_report_template_matches_canonical_yaml():
+    """GitHub issue forms are whitespace-sensitive — holistic guard for SDK bug intake fields."""
+    path = REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "bug_report.yml"
+    assert path.read_text(encoding="utf-8") == CANONICAL_BUG_REPORT_YAML
+
+
+def test_feature_request_template_matches_canonical_yaml():
+    """Holistic guard for enhancement form copy and required-field layout."""
+    path = REPO_ROOT / ".github" / "ISSUE_TEMPLATE" / "feature_request.yml"
+    assert path.read_text(encoding="utf-8") == CANONICAL_FEATURE_REQUEST_YAML

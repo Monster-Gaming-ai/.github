@@ -418,3 +418,38 @@ def test_validate_workflow_test_job_has_only_expected_keys():
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
 
     assert set(workflow["jobs"]["test"].keys()) == {"runs-on", "steps"}
+
+
+CANONICAL_VALIDATE_WORKFLOW = """\
+name: Validate org profile
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+
+      - name: Install test dependencies
+        run: pip install -r requirements-dev.txt
+
+      - name: Run validation tests
+        run: pytest -q
+"""
+
+
+def test_validate_workflow_matches_canonical_document():
+    """Raw-file backstop catches trigger key casing, step order, and pip/pytest command drift."""
+    workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert workflow_text == CANONICAL_VALIDATE_WORKFLOW

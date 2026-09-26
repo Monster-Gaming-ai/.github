@@ -1181,3 +1181,56 @@ def test_community_health_text_files_have_no_trailing_whitespace(rel_path):
         assert line == line.rstrip(), (
             f"{rel_path} line {line_number} has trailing whitespace: {line!r}"
         )
+
+
+CANONICAL_CONTRIBUTING = """\
+# Contributing to Monster Gaming
+
+We welcome contributions! Here's how to get started.
+
+## Quick Start
+
+1. Fork the repository
+2. Create a feature branch: `git checkout -b feat/your-feature`
+3. Make your changes
+4. Ensure tests pass
+5. Submit a pull request
+
+## Guidelines
+
+- All new source files must include the Apache-2.0 SPDX header
+- Follow existing code style and conventions
+- Write tests for new functionality
+- Keep PRs focused — one feature or fix per PR
+
+## License
+
+By contributing, you agree that your contributions will be licensed under the Apache-2.0 License.
+
+## Questions?
+
+Open a Discussion on this repository or reach out at dev@monstergaming.ai.
+"""
+
+CANONICAL_PR_TEMPLATE = """\
+## What does this PR do?
+
+## How to test
+
+## Checklist
+- [ ] Tests pass locally
+- [ ] Documentation updated (if applicable)
+- [ ] SPDX headers present on new files
+"""
+
+
+def test_contributing_matches_canonical_document():
+    """Backstop for fork workflow, test gate, and support contact — substring tests miss holistic drift."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    assert contributing == CANONICAL_CONTRIBUTING
+
+
+def test_pull_request_template_matches_canonical_document():
+    """Backstop for PR review sections and checklist — reordering sections is easy to miss piecemeal."""
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    assert template == CANONICAL_PR_TEMPLATE
