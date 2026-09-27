@@ -650,6 +650,17 @@ def test_license_disclaimer_of_warranty_uses_as_is_basis():
     assert "PARTICULAR PURPOSE" in disclaimer
 
 
+def test_license_disclaimer_of_warranty_lists_title_and_non_infringement():
+    """Section 7 implied-warranty list must name TITLE and NON-INFRINGEMENT — FITNESS-only checks miss mid-line deletes."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    disclaimer = license_text.split("   8. Limitation of Liability.", maxsplit=1)[0]
+    disclaimer = disclaimer.split("   7. Disclaimer of Warranty.", maxsplit=1)[1]
+
+    assert "implied, including, without limitation, any warranties or conditions" in disclaimer
+    assert "of TITLE, NON-INFRINGEMENT, MERCHANTABILITY, or FITNESS FOR A" in disclaimer
+    assert "risks associated with Your exercise of permissions under this License." in disclaimer
+
+
 def test_license_limitation_of_liability_preserves_damage_exclusions():
     """Section 8 caps contributor liability — missing clauses weaken downstream protections."""
     license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
@@ -658,9 +669,12 @@ def test_license_limitation_of_liability_preserves_damage_exclusions():
 
     for phrase in (
         "In no event and under no legal theory",
+        "whether in tort (including negligence), contract, or otherwise",
         "direct, indirect, special",
         "incidental, or consequential damages",
+        "result of this License or out of the use or inability to use the",
         "loss of goodwill",
+        "computer failure or malfunction",
         "has been advised of the possibility of such damages",
     ):
         assert phrase in liability, f"missing Apache-2.0 liability exclusion: {phrase!r}"
@@ -678,6 +692,22 @@ def test_license_warranty_acceptance_requires_indemnification():
     assert "indemnify," in warranty
     assert "defend, and hold each Contributor harmless" in warranty
     assert "on Your own behalf and on Your sole responsibility" in warranty
+    assert (
+        "incurred by, or claims asserted against, such Contributor by reason"
+        in warranty
+    )
+    assert "of your accepting any such warranty or additional liability." in warranty
+
+
+def test_license_copyright_grant_closes_with_source_or_object_form_distribution():
+    """Section 2 closing clause scopes distribution media — grant-term loops miss the final sentence."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    copyright_grant = license_text.split("   3. Grant of Patent License.", maxsplit=1)[0]
+    copyright_grant = copyright_grant.split("   2. Grant of Copyright License.", maxsplit=1)[1]
+
+    assert (
+        "Work and such Derivative Works in Source or Object form." in copyright_grant
+    )
 
 
 def test_license_definitions_include_legal_entity_control_criteria():

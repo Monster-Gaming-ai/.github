@@ -1,6 +1,8 @@
 """Validate CI workflow gates profile and template regressions on merge."""
 
 import re
+import subprocess
+import sys
 from pathlib import Path
 
 import yaml
@@ -195,6 +197,23 @@ def test_validation_suite_includes_all_expected_test_modules():
     present = sorted(path.name for path in tests_dir.glob("*.py"))
 
     assert present == list(EXPECTED_TEST_MODULES)
+
+
+EXPECTED_VALIDATION_TEST_COUNT = 502
+
+
+def test_validation_suite_collects_expected_test_count():
+    """Accidental test deletion can leave modules in place — collection count is the backstop."""
+    result = subprocess.run(
+        [sys.executable, "-m", "pytest", "--collect-only", "-q"],
+        cwd=REPO_ROOT,
+        capture_output=True,
+        text=True,
+        check=True,
+    )
+    match = re.search(r"(\d+) tests collected", result.stdout)
+    assert match, f"could not parse pytest collection output: {result.stdout!r}"
+    assert int(match.group(1)) == EXPECTED_VALIDATION_TEST_COUNT
 
 
 def test_tests_directory_has_no_non_python_artifacts():
