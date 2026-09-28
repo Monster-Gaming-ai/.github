@@ -1213,6 +1213,76 @@ def test_community_health_text_files_have_no_trailing_whitespace(rel_path):
         )
 
 
+def test_license_legal_entity_includes_common_control_definition():
+    """Section 1 affiliate scope — middle definition lines were uncaught by single-line deletes."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert (
+        "other entities that control, are controlled by, or are under common"
+        in definitions
+    )
+    assert "control with that entity. For the purposes of this definition," in definitions
+
+
+def test_license_object_form_includes_made_available_clause():
+    """Section 1 Object form clause anchors redistribution media definitions."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert "Object form, made available under the License, as indicated by a" in definitions
+
+
+def test_license_patent_grant_preserves_contribution_combination_and_litigation_trigger():
+    """Section 3 combination/litigation sentences — deleting one line left grant terms intact."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    patent_grant = license_text.split("   4. Redistribution.", maxsplit=1)[0]
+    patent_grant = patent_grant.split("   3. Grant of Patent License.", maxsplit=1)[1]
+
+    assert "with the Work to which such Contribution(s) was submitted. If You" in patent_grant
+    assert (
+        "or a Contribution incorporated within the Work constitutes direct"
+        in patent_grant
+    )
+
+
+def test_license_redistribution_condition_d_preserves_derivative_notice_placement():
+    """Section 4(d) NOTICE placement — per-marker tests missed mid-clause line deletes."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    redistribution = _license_redistribution_section()
+
+    assert "then any Derivative Works that You distribute must" in redistribution
+    assert (
+        "within such NOTICE file, excluding any notices that do not"
+        in redistribution
+    )
+    assert "pertain to any part of the Derivative Works, in at least one" in redistribution
+
+
+def test_license_limitation_preserves_gross_negligence_exception():
+    """Section 8 liability cap carve-out — boilerplate deletes were previously uncaught."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    liability = license_text.split("   9. Accepting Warranty or Additional Liability.", maxsplit=1)[0]
+    liability = liability.split("   8. Limitation of Liability.", maxsplit=1)[1]
+
+    assert "unless required by applicable law (such as deliberate and grossly" in liability
+    assert "negligent acts) or agreed to in writing, shall any Contributor be" in liability
+    assert "other commercial damages or losses), even if such Contributor" in liability
+
+
+def test_license_accepting_liability_preserves_sole_responsibility_clause():
+    """Section 9 indemnity scope — accepting obligations must stay contributor-scoped."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    accepting = license_text.split("   END OF TERMS AND CONDITIONS", maxsplit=1)[0]
+    accepting = accepting.split("   9. Accepting Warranty or Additional Liability.", maxsplit=1)[1]
+
+    assert (
+        "or other liability obligations and/or rights consistent with this"
+        in accepting
+    )
+    assert "License. However, in accepting such obligations, You may act only" in accepting
+
+
 CANONICAL_CONTRIBUTING = """\
 # Contributing to Monster Gaming
 
