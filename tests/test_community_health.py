@@ -1283,6 +1283,83 @@ def test_license_accepting_liability_preserves_sole_responsibility_clause():
     assert "License. However, in accepting such obligations, You may act only" in accepting
 
 
+def test_license_legal_entity_preserves_direction_and_management_criterion():
+    """Section 1 control definition — contract/management criterion was uncaught by share-ownership checks."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert (
+        "direction or management of such entity, whether by contract or"
+        in definitions
+    )
+
+
+def test_license_object_form_preserves_mechanical_transformation_scope():
+    """Section 1 Object form — translation scope line deletes were uncaught by made-available anchors."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert (
+        "transformation or translation of a Source form, including but"
+        in definitions
+    )
+
+
+def test_license_derivative_works_preserves_authorship_and_link_exclusion():
+    """Section 1 Derivative Works — mid-definition deletes left separable-work guards intact."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert (
+        "form, that is based on (or derived from) the Work and for which the"
+        in definitions
+    )
+    assert "the Work and Derivative Works thereof." in definitions
+
+
+def test_license_contribution_definition_preserves_intentional_submission_scope():
+    """Section 1 Contribution/submitted — channel definition middle lines were uncaught."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    definitions = license_text.split("   2. Grant of Copyright License.", maxsplit=1)[0]
+
+    assert (
+        "the original version of the Work and any modifications or additions"
+        in definitions
+    )
+    assert (
+        "or by an individual or Legal Entity authorized to submit on behalf of"
+        in definitions
+    )
+    assert (
+        'the copyright owner. For the purposes of this definition, "submitted"'
+        in definitions
+    )
+    assert (
+        "to the Licensor or its representatives, including but not limited to"
+        in definitions
+    )
+    assert (
+        "Licensor for the purpose of discussing and improving the Work, but"
+        in definitions
+    )
+
+
+def test_license_patent_grant_preserves_perpetual_worldwide_preamble():
+    """Section 3 opening grant terms duplicate section 2 — patent-specific termination depends on this block."""
+    license_text = (REPO_ROOT / "LICENSE").read_text(encoding="utf-8")
+    patent_grant = license_text.split("   4. Redistribution.", maxsplit=1)[0]
+    patent_grant = patent_grant.split("   3. Grant of Patent License.", maxsplit=1)[1]
+
+    assert (
+        "this License, each Contributor hereby grants to You a perpetual,"
+        in patent_grant
+    )
+    assert (
+        "worldwide, non-exclusive, no-charge, royalty-free, irrevocable"
+        in patent_grant
+    )
+
+
 CANONICAL_CONTRIBUTING = """\
 # Contributing to Monster Gaming
 
