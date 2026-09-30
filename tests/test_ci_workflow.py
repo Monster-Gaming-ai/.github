@@ -199,7 +199,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 513
+EXPECTED_VALIDATION_TEST_COUNT = 514
 
 
 def test_validation_suite_collects_expected_test_count():
