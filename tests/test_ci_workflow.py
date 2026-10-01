@@ -99,6 +99,18 @@ def test_requirements_dev_pins_compatible_major_versions():
     assert "PyYAML>=6.0,<7" in requirements
 
 
+CANONICAL_REQUIREMENTS_DEV = """\
+pytest>=8.0,<9
+PyYAML>=6.0,<7
+"""
+
+
+def test_requirements_dev_matches_canonical_document():
+    """Full-document guard — blank lines or extra pins change CI without failing substring checks."""
+    requirements = (REPO_ROOT / "requirements-dev.txt").read_text(encoding="utf-8")
+    assert requirements == CANONICAL_REQUIREMENTS_DEV
+
+
 def test_validate_workflow_has_single_test_job():
     workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
 
@@ -199,7 +211,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 514
+EXPECTED_VALIDATION_TEST_COUNT = 516
 
 
 def test_validation_suite_collects_expected_test_count():

@@ -330,6 +330,13 @@ def test_contributing_guidelines_test_bullet_uses_exact_wording():
     assert test_bullet == "- Write tests for new functionality"
 
 
+CANONICAL_GITIGNORE = """\
+__pycache__/
+*.py[cod]
+.pytest_cache/
+"""
+
+
 def test_gitignore_lists_exactly_three_patterns_in_order():
     gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
     lines = [line for line in gitignore.splitlines() if line.strip()]
@@ -1612,3 +1619,9 @@ def test_pull_request_template_matches_canonical_document():
     """Backstop for PR review sections and checklist — reordering sections is easy to miss piecemeal."""
     template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
     assert template == CANONICAL_PR_TEMPLATE
+
+
+def test_gitignore_matches_canonical_document():
+    """Full-document guard — extra patterns or reordering can slip past per-line substring checks."""
+    gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
+    assert gitignore == CANONICAL_GITIGNORE
