@@ -1,5 +1,6 @@
 """Validate CI workflow gates profile and template regressions on merge."""
 
+import json
 import re
 import subprocess
 import sys
@@ -9,6 +10,7 @@ import yaml
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "validate.yml"
+ISSUE_FORMS_WORKFLOW_PATH = REPO_ROOT / ".github" / "workflows" / "validate-issue-forms.yml"
 
 
 def _workflow_triggers(workflow: dict) -> dict:
@@ -179,12 +181,12 @@ def test_validate_workflow_pip_install_uses_requirements_file():
     assert install_step["run"].strip() == "pip install -r requirements-dev.txt"
 
 
-def test_validate_workflow_is_sole_ci_gate():
-    """Only validate.yml should gate merges; duplicate workflows cause drift."""
+def test_workflows_directory_lists_expected_ci_gates():
+    """Unexpected workflows add drift; both pytest and issue-form gates must stay pinned."""
     workflows_dir = REPO_ROOT / ".github" / "workflows"
     workflow_files = sorted(path.name for path in workflows_dir.glob("*.yml"))
 
-    assert workflow_files == ["validate.yml"]
+    assert workflow_files == ["validate-issue-forms.yml", "validate.yml"]
 
 
 def test_github_directory_has_only_expected_entries():
@@ -211,7 +213,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 516
+EXPECTED_VALIDATION_TEST_COUNT = 524
 
 
 def test_validation_suite_collects_expected_test_count():
@@ -484,3 +486,111 @@ def test_validate_workflow_matches_canonical_document():
     """Raw-file backstop catches trigger key casing, step order, and pip/pytest command drift."""
     workflow_text = WORKFLOW_PATH.read_text(encoding="utf-8")
     assert workflow_text == CANONICAL_VALIDATE_WORKFLOW
+
+
+def test_issue_forms_workflow_runs_on_pull_request_and_main_push():
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    triggers = _workflow_triggers(workflow)
+
+    assert "pull_request" in triggers
+    assert triggers["push"]["branches"] == ["main"]
+
+
+def test_issue_forms_workflow_executes_npm_test():
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    test_job = workflow["jobs"]["test"]
+
+    run_commands = [step.get("run", "") for step in test_job["steps"] if "run" in step]
+    step_names = [step.get("name", "") for step in test_job["steps"]]
+
+    assert any(command.strip() == "npm ci" for command in run_commands)
+    assert any(command.strip() == "npm test" for command in run_commands)
+    assert "Install dependencies" in step_names
+    assert "Run tests" in step_names
+
+
+def test_issue_forms_workflow_pins_node_version_and_npm_cache():
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    setup_node = next(
+        step for step in workflow["jobs"]["test"]["steps"] if step.get("uses", "").startswith("actions/setup-node")
+    )
+
+    assert setup_node["uses"] == "actions/setup-node@v4"
+    assert setup_node["with"]["node-version"] == "22"
+    assert setup_node["with"]["cache"] == "npm"
+
+
+def test_issue_forms_workflow_has_exactly_four_steps():
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert len(workflow["jobs"]["test"]["steps"]) == 4
+
+
+def test_issue_forms_workflow_uses_checkout_setup_node_and_npm_commands():
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    action_steps = [
+        step["uses"]
+        for step in workflow["jobs"]["test"]["steps"]
+        if step.get("uses", "").startswith("actions/")
+    ]
+
+    assert action_steps == ["actions/checkout@v4", "actions/setup-node@v4"]
+
+
+def test_package_json_runs_node_test_harness_for_issue_forms():
+    package = json.loads((REPO_ROOT / "package.json").read_text(encoding="utf-8"))
+
+    assert package.get("scripts", {}).get("test") == "node --test"
+    assert "yaml" in package.get("devDependencies", {})
+
+
+def test_issue_forms_node_test_module_exists():
+    node_test = REPO_ROOT / "test" / "issue-templates.test.mjs"
+    assert node_test.is_file()
+    text = node_test.read_text(encoding="utf-8")
+    assert "SUPPORTED_BODY_TYPES" in text
+    assert "parseYaml" in text
+
+
+CANONICAL_VALIDATE_ISSUE_FORMS_WORKFLOW = """\
+# Copyright 2026 Monster Gaming
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+name: Validate issue forms
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Run tests
+        run: npm test
+"""
+
+
+def test_issue_forms_workflow_matches_canonical_document():
+    """Raw-file backstop for Node issue-form CI — npm test omission slips past PyYAML substring checks."""
+    workflow_text = ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8")
+    assert workflow_text == CANONICAL_VALIDATE_ISSUE_FORMS_WORKFLOW

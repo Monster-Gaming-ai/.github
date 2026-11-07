@@ -334,14 +334,15 @@ CANONICAL_GITIGNORE = """\
 __pycache__/
 *.py[cod]
 .pytest_cache/
+node_modules/
 """
 
 
-def test_gitignore_lists_exactly_three_patterns_in_order():
+def test_gitignore_lists_exactly_four_patterns_in_order():
     gitignore = (REPO_ROOT / ".gitignore").read_text(encoding="utf-8")
     lines = [line for line in gitignore.splitlines() if line.strip()]
 
-    assert lines == ["__pycache__/", "*.py[cod]", ".pytest_cache/"]
+    assert lines == ["__pycache__/", "*.py[cod]", ".pytest_cache/", "node_modules/"]
 
 
 def test_gitignore_does_not_exclude_tests_directory():
@@ -1164,17 +1165,20 @@ EXPECTED_REPO_ROOT_ENTRIES = frozenset(
         ".gitignore",
         "CONTRIBUTING.md",
         "LICENSE",
+        "package-lock.json",
+        "package.json",
         "profile",
         "requirements-dev.txt",
+        "test",
         "tests",
     }
 )
 
-ALLOWED_TRANSIENT_ROOT_ENTRIES = frozenset({".pytest_cache", "__pycache__"})
+ALLOWED_TRANSIENT_ROOT_ENTRIES = frozenset({".pytest_cache", "__pycache__", "node_modules"})
 
 
 def test_repo_root_contains_only_expected_top_level_entries():
-    """Stray root files (README.md, package.json) do not update the org profile and confuse CI."""
+    """Stray root files (README.md, stray configs) do not update the org profile and confuse CI."""
     present = {path.name for path in REPO_ROOT.iterdir() if path.name != ".git"}
     missing = EXPECTED_REPO_ROOT_ENTRIES - present
     unexpected = present - EXPECTED_REPO_ROOT_ENTRIES - ALLOWED_TRANSIENT_ROOT_ENTRIES
