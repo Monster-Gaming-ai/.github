@@ -213,7 +213,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 524
+EXPECTED_VALIDATION_TEST_COUNT = 538
 
 
 def test_validation_suite_collects_expected_test_count():
@@ -594,3 +594,137 @@ def test_issue_forms_workflow_matches_canonical_document():
     """Raw-file backstop for Node issue-form CI — npm test omission slips past PyYAML substring checks."""
     workflow_text = ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8")
     assert workflow_text == CANONICAL_VALIDATE_ISSUE_FORMS_WORKFLOW
+
+
+def test_issue_forms_workflow_has_only_pull_request_and_push_triggers():
+    """Extra triggers (schedule, workflow_dispatch) add CI cost and drift risk."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    triggers = _workflow_triggers(workflow)
+
+    assert set(triggers.keys()) == {"pull_request", "push"}
+
+
+def test_issue_forms_workflow_pull_request_triggers_on_all_branches():
+    """PR validation must run on every branch, not only main-targeting PRs."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    triggers = _workflow_triggers(workflow)
+
+    pull_request_trigger = triggers["pull_request"]
+    assert pull_request_trigger is None or pull_request_trigger == {}
+
+
+def test_issue_forms_workflow_push_trigger_limited_to_main():
+    """Push validation should gate main merges, not every branch push."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    triggers = _workflow_triggers(workflow)
+
+    push_trigger = triggers.get("push", {})
+    assert push_trigger.get("branches") == ["main"]
+    assert "tags" not in push_trigger
+    assert "paths" not in push_trigger
+
+
+def test_issue_forms_workflow_omits_secrets_and_environment_variables():
+    """Issue-form CI must not depend on repo secrets or injected env vars."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert "env" not in workflow
+    assert "secrets" not in workflow
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert "env" not in step or step["env"] == {}
+        run_command = step.get("run", "")
+        assert "${{ secrets." not in run_command
+
+
+def test_issue_forms_workflow_omits_elevated_permissions():
+    """Validation needs only checkout + npm test — avoid broad GITHUB_TOKEN scopes."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    permissions = workflow.get("permissions")
+    assert permissions is None or permissions == {"contents": "read"}
+
+
+def test_issue_forms_workflow_steps_do_not_use_continue_on_error():
+    """Failed npm test must fail the workflow — continue-on-error hides form regressions."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert step.get("continue-on-error") is not True
+
+
+def test_issue_forms_workflow_steps_omit_conditional_execution():
+    """Conditional steps can skip npm test on certain events and hide template regressions."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert "if" not in step
+
+
+def test_issue_forms_workflow_omits_concurrency_block():
+    """Concurrency settings can cancel in-flight validation runs and hide regressions."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert "concurrency" not in workflow
+
+
+def test_issue_forms_workflow_test_job_has_only_expected_keys():
+    """Job-level container/services/env keys can change CI behavior while npm test still appears to run."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert set(workflow["jobs"]["test"].keys()) == {"runs-on", "steps"}
+
+
+def test_issue_forms_workflow_actions_pin_major_version_only():
+    """Minor/patch action pins drift silently when upstream releases change."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    action_steps = [
+        step["uses"]
+        for step in workflow["jobs"]["test"]["steps"]
+        if step.get("uses", "").startswith("actions/")
+    ]
+
+    for action_ref in action_steps:
+        assert re.fullmatch(r"actions/[\w-]+@v\d+", action_ref), action_ref
+        assert "." not in action_ref.split("@", 1)[1]
+
+
+def test_issue_forms_workflow_checkout_omits_with_overrides():
+    """Checkout overrides can cause shallow clones or credential persistence drift."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    checkout = next(
+        step for step in workflow["jobs"]["test"]["steps"]
+        if step.get("uses", "").startswith("actions/checkout")
+    )
+
+    assert "with" not in checkout
+
+
+def test_issue_forms_workflow_steps_omit_working_directory():
+    """Steps must run from repo root — working-directory overrides break npm test paths."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    for step in workflow["jobs"]["test"]["steps"]:
+        assert "working-directory" not in step
+
+
+def test_issue_forms_workflow_npm_test_runs_full_harness_without_filters():
+    """Narrowing node --test scope silently drops issue-template checks while CI stays green."""
+    workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+    npm_step = next(
+        step for step in workflow["jobs"]["test"]["steps"]
+        if step.get("name") == "Run tests"
+    )
+
+    run_command = npm_step["run"].strip()
+    assert run_command == "npm test"
+    assert "--test-name-pattern" not in run_command
+    assert "test/" not in run_command
+
+
+def test_both_validation_workflows_share_identical_event_triggers():
+    """Profile and issue-form gates must fire on the same events — split triggers hide regressions."""
+    pytest_workflow = yaml.safe_load(WORKFLOW_PATH.read_text(encoding="utf-8"))
+    issue_forms_workflow = yaml.safe_load(ISSUE_FORMS_WORKFLOW_PATH.read_text(encoding="utf-8"))
+
+    assert _workflow_triggers(pytest_workflow) == _workflow_triggers(issue_forms_workflow)
