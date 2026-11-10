@@ -1054,6 +1054,18 @@ def test_contributing_test_requirement_aligns_with_validate_workflow():
     assert "pytest" in workflow_path.read_text(encoding="utf-8")
 
 
+def test_contributing_test_requirement_includes_issue_forms_ci_gate():
+    """Step 4 is a single gate — issue-form YAML must have its own workflow or npm checks never run on merge."""
+    contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
+    issue_forms_workflow = REPO_ROOT / ".github" / "workflows" / "validate-issue-forms.yml"
+
+    assert "Ensure tests pass" in contributing
+    assert issue_forms_workflow.is_file(), "validate-issue-forms.yml must exist alongside pytest CI"
+    workflow_text = issue_forms_workflow.read_text(encoding="utf-8")
+    assert "npm test" in workflow_text
+    assert "npm ci" in workflow_text
+
+
 def test_pull_request_spdx_checklist_aligns_with_contributing_guidelines():
     """PR and CONTRIBUTING SPDX requirements must stay paired — drift leaves contributors unsure."""
     contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
@@ -1143,9 +1155,11 @@ EXPECTED_COMMUNITY_HEALTH_PATHS = (
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/feature_request.yml",
     ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
     "requirements-dev.txt",
     ".gitignore",
     "tests",
+    "test",
 )
 
 
@@ -1153,7 +1167,7 @@ def test_community_health_files_exist_at_expected_paths():
     """LUX-1271 health files must remain present — content tests fail opaquely when a file is deleted."""
     for rel_path in EXPECTED_COMMUNITY_HEALTH_PATHS:
         path = REPO_ROOT / rel_path
-        if rel_path == "tests":
+        if rel_path in ("tests", "test"):
             assert path.is_dir(), f"missing validation suite directory: {rel_path}"
         else:
             assert path.is_file(), f"missing community health file: {rel_path}"
@@ -1195,6 +1209,7 @@ COMMUNITY_HEALTH_TEXT_PATHS = (
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/feature_request.yml",
     ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
     "requirements-dev.txt",
     ".gitignore",
 )
