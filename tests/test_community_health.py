@@ -1138,6 +1138,18 @@ def test_pull_request_tests_checklist_aligns_with_contributing_and_workflow():
     assert "pytest -q" in workflow
 
 
+def test_pull_request_tests_checklist_aligns_with_issue_forms_validate_workflow():
+    """PR 'Tests pass locally' must stay paired with the npm issue-form CI gate, not pytest alone."""
+    template = (REPO_ROOT / ".github" / "PULL_REQUEST_TEMPLATE.md").read_text(encoding="utf-8")
+    issue_forms_workflow = (
+        REPO_ROOT / ".github" / "workflows" / "validate-issue-forms.yml"
+    ).read_text(encoding="utf-8")
+
+    assert "- [ ] Tests pass locally" in template
+    assert "npm test" in issue_forms_workflow
+    assert "npm ci" in issue_forms_workflow
+
+
 def test_contributing_contact_email_stays_out_of_profile_readme():
     """Support email belongs in CONTRIBUTING only — accidental profile exposure is a privacy regression."""
     contributing = (REPO_ROOT / "CONTRIBUTING.md").read_text(encoding="utf-8")
@@ -1212,6 +1224,9 @@ COMMUNITY_HEALTH_TEXT_PATHS = (
     ".github/workflows/validate-issue-forms.yml",
     "requirements-dev.txt",
     ".gitignore",
+    "package.json",
+    "package-lock.json",
+    "test/issue-templates.test.mjs",
 )
 
 
