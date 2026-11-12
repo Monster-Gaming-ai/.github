@@ -1159,6 +1159,36 @@ def test_contributing_contact_email_stays_out_of_profile_readme():
     assert "dev@monstergaming.ai" not in profile_text
 
 
+PROFILE_REFRESH_MARKETING_CLAIMS = (
+    "145+ specialist agents",
+    "Man in the Machine",
+    "weekly dispatch from the engineering floor",
+    "[Loki Code]",
+    "our open-source AI coding CLI",
+    "built in C11",
+    "because-ours-got-revoked",
+    "auto-routes to specialist agents",
+)
+
+NON_PROFILE_COMMUNITY_SURFACES = (
+    "CONTRIBUTING.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    ".github/ISSUE_TEMPLATE/bug_report.yml",
+    ".github/ISSUE_TEMPLATE/feature_request.yml",
+)
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_refresh_marketing_stays_out_of_community_templates(rel_path):
+    """4618966 profile copy must not leak into contributor templates — confuses issue triage and legal tone."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+
+    for claim in PROFILE_REFRESH_MARKETING_CLAIMS:
+        assert claim not in text, (
+            f"profile marketing claim must not appear in {rel_path}: {claim!r}"
+        )
+
+
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
     "LICENSE",
     "CONTRIBUTING.md",
