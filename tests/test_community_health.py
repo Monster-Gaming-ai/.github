@@ -1168,6 +1168,12 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "built in C11",
     "because-ours-got-revoked",
     "auto-routes to specialist agents",
+    "195 tests",
+    "8.1 MB",
+    "30+ game dev disciplines",
+    "shader, animation, netcode, level design, QA",
+    "sits above the engine",
+    "AI-powered game development platform",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1175,6 +1181,7 @@ NON_PROFILE_COMMUNITY_SURFACES = (
     ".github/PULL_REQUEST_TEMPLATE.md",
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/feature_request.yml",
+    "LICENSE",
 )
 
 

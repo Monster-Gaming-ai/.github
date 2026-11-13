@@ -213,7 +213,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 556
+EXPECTED_VALIDATION_TEST_COUNT = 558
 
 
 def test_validation_suite_collects_expected_test_count():
@@ -542,6 +542,27 @@ def test_package_json_runs_node_test_harness_for_issue_forms():
 
     assert package.get("scripts", {}).get("test") == "node --test"
     assert "yaml" in package.get("devDependencies", {})
+
+
+CANONICAL_PACKAGE_JSON = """{
+  "name": "@monstergaming/dot-github",
+  "private": true,
+  "description": "Monster Gaming org profile and shared GitHub configuration",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "yaml": "^2.6.1"
+  }
+}
+"""
+
+
+def test_package_json_matches_canonical_document():
+    """Full-document guard for npm CI — script or yaml pin drift slips past JSON field checks."""
+    package_text = (REPO_ROOT / "package.json").read_text(encoding="utf-8")
+    assert package_text == CANONICAL_PACKAGE_JSON
 
 
 def test_issue_forms_node_test_module_exists():
