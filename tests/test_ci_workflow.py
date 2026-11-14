@@ -213,7 +213,7 @@ def test_validation_suite_includes_all_expected_test_modules():
     assert present == list(EXPECTED_TEST_MODULES)
 
 
-EXPECTED_VALIDATION_TEST_COUNT = 558
+EXPECTED_VALIDATION_TEST_COUNT = 561
 
 
 def test_validation_suite_collects_expected_test_count():
@@ -563,6 +563,45 @@ def test_package_json_matches_canonical_document():
     """Full-document guard for npm CI — script or yaml pin drift slips past JSON field checks."""
     package_text = (REPO_ROOT / "package.json").read_text(encoding="utf-8")
     assert package_text == CANONICAL_PACKAGE_JSON
+
+
+CANONICAL_PACKAGE_LOCK_JSON = """{
+  "name": "@monstergaming/dot-github",
+  "lockfileVersion": 3,
+  "requires": true,
+  "packages": {
+    "": {
+      "name": "@monstergaming/dot-github",
+      "license": "Apache-2.0",
+      "devDependencies": {
+        "yaml": "^2.6.1"
+      }
+    },
+    "node_modules/yaml": {
+      "version": "2.9.1",
+      "resolved": "https://registry.npmjs.org/yaml/-/yaml-2.9.1.tgz",
+      "integrity": "sha512-3NxN8+78OdzbT7C/WjGsyfPAtJaN3FNDsWxv7Y7mcDsT/oOmgW8BpyQQFFBnvZE3j9Y2Sdz1ULFLezL7Eb2yFw==",
+      "dev": true,
+      "license": "ISC",
+      "bin": {
+        "yaml": "bin.mjs"
+      },
+      "engines": {
+        "node": ">= 14.6"
+      },
+      "funding": {
+        "url": "https://github.com/sponsors/eemeli"
+      }
+    }
+  }
+}
+"""
+
+
+def test_package_lock_matches_canonical_document():
+    """Full-document guard for npm ci — unpinned yaml resolution breaks issue-form validation in CI."""
+    lock_text = (REPO_ROOT / "package-lock.json").read_text(encoding="utf-8")
+    assert lock_text == CANONICAL_PACKAGE_LOCK_JSON
 
 
 def test_issue_forms_node_test_module_exists():

@@ -1174,6 +1174,12 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "shader, animation, netcode, level design, QA",
     "sits above the engine",
     "AI-powered game development platform",
+    "Monster-GPT",
+    "@monstergaming/sdk",
+    "OpenAI-compatible API",
+    "free tier available",
+    "luxedeum.com",
+    "Engine-aware code generation",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1182,6 +1188,8 @@ NON_PROFILE_COMMUNITY_SURFACES = (
     ".github/ISSUE_TEMPLATE/bug_report.yml",
     ".github/ISSUE_TEMPLATE/feature_request.yml",
     "LICENSE",
+    ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
 )
 
 
