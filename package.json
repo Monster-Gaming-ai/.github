@@ -1,0 +1,12 @@
+{
+  "name": "@monstergaming/dot-github",
+  "private": true,
+  "description": "Monster Gaming org profile and shared GitHub configuration",
+  "license": "Apache-2.0",
+  "scripts": {
+    "test": "node --test"
+  },
+  "devDependencies": {
+    "yaml": "^2.6.1"
+  }
+}
