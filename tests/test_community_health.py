@@ -1188,6 +1188,8 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "pip install monstergaming",
     "npm install @monstergaming/sdk",
     "cargo add monstergaming",
+    "We route your queries through",
+    "flagship model",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1252,6 +1254,34 @@ def test_profile_refresh_offering_taglines_stay_out_of_contributor_markdown(rel_
     """Product offering copy belongs on the org profile only — not contributor workflow docs."""
     text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
     assert tagline not in text
+
+
+PROFILE_INTRO_PASTE_PHRASES = (
+    "We route your queries through",
+    "flagship model",
+)
+
+
+@pytest.mark.parametrize(
+    "rel_path",
+    (
+        "CONTRIBUTING.md",
+        ".github/PULL_REQUEST_TEMPLATE.md",
+    ),
+)
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_contributor_markdown(rel_path, phrase):
+    """Intro routing and Monster-GPT copy belongs on the org profile only — not contributor docs."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert phrase not in text
+
+
+@pytest.mark.parametrize("rel_path", ISSUE_FORM_PATHS)
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_issue_forms(rel_path, phrase):
+    """Profile intro paste must not land in issue forms — breaks SDK-scoped bug intake."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert phrase not in text
 
 
 def test_profile_refresh_newsletter_url_stays_out_of_ci_workflows():
