@@ -1259,6 +1259,13 @@ def test_profile_refresh_offering_taglines_stay_out_of_contributor_markdown(rel_
 PROFILE_INTRO_PASTE_PHRASES = (
     "We route your queries through",
     "flagship model",
+    "145+ specialist agents",
+    "Unity, Godot, and bespoke engines",
+)
+
+PROFILE_CANONICAL_INTRO_PREFIX = (
+    "Monster Gaming is an AI platform that sits above the engine. "
+    "We route your queries through 145+ specialist agents"
 )
 
 
@@ -1282,6 +1289,13 @@ def test_profile_refresh_intro_paste_stays_out_of_issue_forms(rel_path, phrase):
     """Profile intro paste must not land in issue forms — breaks SDK-scoped bug intake."""
     text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
     assert phrase not in text
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_canonical_intro_prefix_stays_out_of_community_surfaces(rel_path):
+    """Bulk intro paste into legal, contributor, or CI files is a high blast-radius regression."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PREFIX not in text
 
 
 def test_profile_refresh_newsletter_url_stays_out_of_ci_workflows():
