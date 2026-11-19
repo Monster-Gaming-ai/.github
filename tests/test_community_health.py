@@ -1190,6 +1190,10 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "cargo add monstergaming",
     "We route your queries through",
     "flagship model",
+    "gameplay systems, shaders, networking, and UI",
+    "https://pypi.org/project/monstergaming/",
+    "https://www.npmjs.com/package/@monstergaming/sdk",
+    "https://crates.io/crates/monstergaming",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1234,6 +1238,40 @@ def test_profile_refresh_sdk_install_commands_stay_out_of_issue_forms(rel_path, 
     assert install_command not in text
 
 
+PROFILE_SDK_REGISTRY_URLS = (
+    "https://pypi.org/project/monstergaming/",
+    "https://www.npmjs.com/package/@monstergaming/sdk",
+    "https://crates.io/crates/monstergaming",
+)
+
+PROFILE_REGISTRY_EXCLUDED_PATHS = ISSUE_FORM_PATHS + (
+    "CONTRIBUTING.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_REGISTRY_EXCLUDED_PATHS)
+@pytest.mark.parametrize("registry_url", PROFILE_SDK_REGISTRY_URLS)
+def test_profile_refresh_sdk_registry_urls_stay_out_of_triage_surfaces(rel_path, registry_url):
+    """Package registry URLs from the SDK table must not paste into issue or contributor workflows."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert registry_url not in text
+
+
+PROFILE_ENGINE_AWARE_CLAIMS = (
+    "gameplay systems, shaders, networking, and UI",
+    "networking, and UI that actually compile",
+)
+
+
+@pytest.mark.parametrize("rel_path", ISSUE_FORM_PATHS)
+@pytest.mark.parametrize("claim", PROFILE_ENGINE_AWARE_CLAIMS)
+def test_profile_refresh_engine_aware_claims_stay_out_of_issue_forms(rel_path, claim):
+    """Engine-aware codegen bullets from the profile must not land in SDK-scoped issue forms."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert claim not in text
+
+
 PROFILE_OFFERING_TAGLINES = (
     "drop-in replacement for OpenAI SDKs",
     "game-dev-tuned models",
@@ -1261,6 +1299,8 @@ PROFILE_INTRO_PASTE_PHRASES = (
     "flagship model",
     "145+ specialist agents",
     "Unity, Godot, and bespoke engines",
+    "shader, animation, netcode, level design, QA",
+    "purpose-built for",
 )
 
 PROFILE_CANONICAL_INTRO_PREFIX = (
