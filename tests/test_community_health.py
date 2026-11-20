@@ -1272,6 +1272,76 @@ def test_profile_refresh_engine_aware_claims_stay_out_of_issue_forms(rel_path, c
     assert claim not in text
 
 
+PROFILE_ENGINE_AWARE_LEGAL_AND_CONTRIBUTOR_PATHS = (
+    "CONTRIBUTING.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+    "LICENSE",
+    ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_ENGINE_AWARE_LEGAL_AND_CONTRIBUTOR_PATHS)
+@pytest.mark.parametrize("claim", PROFILE_ENGINE_AWARE_CLAIMS)
+def test_profile_refresh_engine_aware_claims_stay_out_of_legal_and_contributor_surfaces(
+    rel_path, claim
+):
+    """Engine-aware codegen copy must not paste into legal, contributor, or CI YAML — high blast radius."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert claim not in text
+
+
+PROFILE_SDK_INSTALL_CONTRIBUTOR_PATHS = (
+    "CONTRIBUTING.md",
+    ".github/PULL_REQUEST_TEMPLATE.md",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_SDK_INSTALL_CONTRIBUTOR_PATHS)
+@pytest.mark.parametrize("install_command", PROFILE_SDK_INSTALL_COMMANDS)
+def test_profile_refresh_sdk_install_commands_stay_out_of_contributor_markdown(
+    rel_path, install_command
+):
+    """SDK install one-liners from the profile table must not land in contributor workflow docs."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert install_command not in text
+
+
+PROFILE_SDK_REGISTRY_LICENSE_AND_CI_PATHS = (
+    "LICENSE",
+    ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_SDK_REGISTRY_LICENSE_AND_CI_PATHS)
+@pytest.mark.parametrize("registry_url", PROFILE_SDK_REGISTRY_URLS)
+def test_profile_refresh_sdk_registry_urls_stay_out_of_license_and_ci_workflows(
+    rel_path, registry_url
+):
+    """Package registry URLs must not leak into Apache license text or validation workflow YAML."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert registry_url not in text
+
+
+PROFILE_LOKI_BLOG_URL = (
+    "https://blog.monstergaming.ai/we-built-our-own-ai-coding-cli-in-c-because-ours-got-revoked/"
+)
+
+PROFILE_LOKI_BLOG_EXCLUDED_PATHS = ISSUE_FORM_PATHS + PROFILE_SDK_INSTALL_CONTRIBUTOR_PATHS + (
+    "LICENSE",
+    ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_LOKI_BLOG_EXCLUDED_PATHS)
+def test_profile_refresh_loki_blog_url_stays_out_of_triage_legal_and_ci(rel_path):
+    """Loki Code announcement URL belongs on the org profile only — not templates or CI."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_LOKI_BLOG_URL not in text
+
+
 PROFILE_OFFERING_TAGLINES = (
     "drop-in replacement for OpenAI SDKs",
     "game-dev-tuned models",
