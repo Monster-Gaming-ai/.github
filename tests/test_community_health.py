@@ -1194,6 +1194,12 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "https://pypi.org/project/monstergaming/",
     "https://www.npmjs.com/package/@monstergaming/sdk",
     "https://crates.io/crates/monstergaming",
+    "https://monstergaming.ai/pricing",
+    "https://monstergaming.ai/quickstart",
+    "monstergaming.ai/pricing",
+    "monstergaming.ai/quickstart",
+    "TypeScript / JavaScript",
+    "| Language | Package | Install |",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1216,6 +1222,36 @@ def test_profile_refresh_marketing_stays_out_of_community_templates(rel_path):
         assert claim not in text, (
             f"profile marketing claim must not appear in {rel_path}: {claim!r}"
         )
+
+
+PROFILE_PRODUCT_URLS = (
+    "https://monstergaming.ai/pricing",
+    "https://monstergaming.ai/quickstart",
+    "monstergaming.ai/pricing",
+    "monstergaming.ai/quickstart",
+)
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+@pytest.mark.parametrize("product_url", PROFILE_PRODUCT_URLS)
+def test_profile_refresh_product_urls_stay_out_of_community_surfaces(rel_path, product_url):
+    """Pricing and quickstart URLs belong in profile Links/offers only — not legal or SDK triage paths."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert product_url not in text
+
+
+PROFILE_SDK_TABLE_MARKERS = (
+    "TypeScript / JavaScript",
+    "| Language | Package | Install |",
+)
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+@pytest.mark.parametrize("marker", PROFILE_SDK_TABLE_MARKERS)
+def test_profile_refresh_sdk_table_markers_stay_out_of_community_surfaces(rel_path, marker):
+    """Official SDKs table markup must not paste into contributor, legal, or CI files."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert marker not in text
 
 
 ISSUE_FORM_PATHS = (
