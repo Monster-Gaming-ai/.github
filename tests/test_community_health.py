@@ -1200,6 +1200,8 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "monstergaming.ai/quickstart",
     "TypeScript / JavaScript",
     "| Language | Package | Install |",
+    "Unreal Engine",
+    "[Unreal Engine](https://monstergaming.ai)",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1433,6 +1435,21 @@ def test_profile_refresh_intro_paste_stays_out_of_contributor_markdown(rel_path,
 @pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
 def test_profile_refresh_intro_paste_stays_out_of_issue_forms(rel_path, phrase):
     """Profile intro paste must not land in issue forms — breaks SDK-scoped bug intake."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert phrase not in text
+
+
+PROFILE_INTRO_LICENSE_AND_CI_PATHS = (
+    "LICENSE",
+    ".github/workflows/validate.yml",
+    ".github/workflows/validate-issue-forms.yml",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_INTRO_LICENSE_AND_CI_PATHS)
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_license_and_ci(rel_path, phrase):
+    """Profile intro routing paste must not land in legal text or validation workflow YAML."""
     text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
     assert phrase not in text
 
