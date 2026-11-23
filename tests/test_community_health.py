@@ -1202,6 +1202,10 @@ PROFILE_REFRESH_MARKETING_CLAIMS = (
     "| Language | Package | Install |",
     "Unreal Engine",
     "[Unreal Engine](https://monstergaming.ai)",
+    "https://blog.monstergaming.ai/newsletter/",
+    "[Man in the Machine]",
+    "A [Luxedeum](https://luxedeum.com) company.",
+    "**AI-powered game development platform.**",
 )
 
 NON_PROFILE_COMMUNITY_SURFACES = (
@@ -1469,6 +1473,53 @@ def test_profile_refresh_newsletter_url_stays_out_of_ci_workflows():
             REPO_ROOT / ".github" / "workflows" / workflow_name
         ).read_text(encoding="utf-8")
         assert newsletter_fragment not in workflow_text
+
+
+PROFILE_SECTION_HEADERS = (
+    "## What We Build",
+    "## Official SDKs",
+    "## Links",
+)
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+@pytest.mark.parametrize("section_header", PROFILE_SECTION_HEADERS)
+def test_profile_refresh_section_headers_stay_out_of_community_surfaces(
+    rel_path, section_header
+):
+    """Profile section headings pasted into legal or triage files break tone and YAML parsing."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert section_header not in text
+
+
+PROFILE_LUXEDEUM_FOOTER = "A [Luxedeum](https://luxedeum.com) company."
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_refresh_luxedeum_footer_stays_out_of_community_surfaces(rel_path):
+    """Org-profile footer belongs on GitHub profile README only — not LICENSE or contributor paths."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_LUXEDEUM_FOOTER not in text
+
+
+PROFILE_NEWSLETTER_LINK_MARKDOWN = "[Man in the Machine]"
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_refresh_newsletter_link_markdown_stays_out_of_community_surfaces(rel_path):
+    """Newsletter link label with brackets is profile Links markup — substring guards miss bracket form."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_NEWSLETTER_LINK_MARKDOWN not in text
+
+
+PROFILE_TAGLINE_MARKDOWN = "**AI-powered game development platform.**"
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_refresh_tagline_markdown_stays_out_of_community_surfaces(rel_path):
+    """Bold platform tagline is org-profile hero copy — must not paste into issue forms or LICENSE."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_TAGLINE_MARKDOWN not in text
 
 
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
