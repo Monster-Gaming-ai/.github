@@ -1413,11 +1413,20 @@ PROFILE_INTRO_PASTE_PHRASES = (
     "Unity, Godot, and bespoke engines",
     "shader, animation, netcode, level design, QA",
     "purpose-built for",
+    "sits above the engine",
+    "auto-routes to specialist agents",
 )
 
 PROFILE_CANONICAL_INTRO_PREFIX = (
     "Monster Gaming is an AI platform that sits above the engine. "
     "We route your queries through 145+ specialist agents"
+)
+
+PROFILE_CANONICAL_INTRO_PARAGRAPH = (
+    "Monster Gaming is an AI platform that sits above the engine. "
+    "We route your queries through 145+ specialist agents — shader, animation, netcode, "
+    "level design, QA, and more — purpose-built for [Unreal Engine](https://monstergaming.ai), "
+    "Unity, Godot, and bespoke engines."
 )
 
 
@@ -1463,6 +1472,13 @@ def test_profile_canonical_intro_prefix_stays_out_of_community_surfaces(rel_path
     """Bulk intro paste into legal, contributor, or CI files is a high blast-radius regression."""
     text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
     assert PROFILE_CANONICAL_INTRO_PREFIX not in text
+
+
+@pytest.mark.parametrize("rel_path", NON_PROFILE_COMMUNITY_SURFACES)
+def test_profile_canonical_intro_paragraph_stays_out_of_community_surfaces(rel_path):
+    """Prefix guards miss a full 4618966 intro paste — one block breaks LICENSE and triage YAML."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PARAGRAPH not in text
 
 
 def test_profile_refresh_newsletter_url_stays_out_of_ci_workflows():
