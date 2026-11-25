@@ -1538,6 +1538,51 @@ def test_profile_refresh_tagline_markdown_stays_out_of_community_surfaces(rel_pa
     assert PROFILE_TAGLINE_MARKDOWN not in text
 
 
+PROFILE_TOOLING_AND_LOCKFILE_SURFACES = (
+    "package.json",
+    "package-lock.json",
+    "requirements-dev.txt",
+    ".gitignore",
+    "test/issue-templates.test.mjs",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_refresh_marketing_stays_out_of_tooling_and_lockfiles(rel_path):
+    """4618966 marketing paste into package.json or requirements-dev.txt breaks npm ci and pip install."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+
+    for claim in PROFILE_REFRESH_MARKETING_CLAIMS:
+        assert claim not in text, (
+            f"profile marketing claim must not appear in {rel_path}: {claim!r}"
+        )
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_canonical_intro_paragraph_stays_out_of_tooling_and_lockfiles(rel_path):
+    """Full intro paste into requirements-dev.txt or package-lock.json is a high blast-radius CI regression."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PARAGRAPH not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+@pytest.mark.parametrize("install_command", PROFILE_SDK_INSTALL_COMMANDS)
+def test_profile_refresh_sdk_install_commands_stay_out_of_tooling_and_lockfiles(
+    rel_path, install_command
+):
+    """SDK install lines must not land in requirements-dev.txt — pip would pull wrong packages."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert install_command not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_tooling_and_lockfiles(rel_path, phrase):
+    """Intro routing copy in lockfiles or Node harness breaks validation without tripping LICENSE guards."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert phrase not in text
+
+
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
     "LICENSE",
     "CONTRIBUTING.md",
