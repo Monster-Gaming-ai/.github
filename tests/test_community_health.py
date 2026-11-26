@@ -1583,6 +1583,52 @@ def test_profile_refresh_intro_paste_stays_out_of_tooling_and_lockfiles(rel_path
     assert phrase not in text
 
 
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_canonical_intro_prefix_stays_out_of_tooling_and_lockfiles(rel_path):
+    """Partial intro paste into package.json or pytest deps file breaks tooling without tripping full-paragraph guards."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PREFIX not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+@pytest.mark.parametrize("section_header", PROFILE_SECTION_HEADERS)
+def test_profile_refresh_section_headers_stay_out_of_tooling_and_lockfiles(
+    rel_path, section_header
+):
+    """Profile markdown headings in lockfiles or Node harness corrupt JSON/YAML and break npm ci."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert section_header not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_refresh_luxedeum_footer_stays_out_of_tooling_and_lockfiles(rel_path):
+    """Org footer paste into requirements-dev.txt or .gitignore is a high blast-radius CI regression."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_LUXEDEUM_FOOTER not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_refresh_newsletter_link_markdown_stays_out_of_tooling_and_lockfiles(rel_path):
+    """Bracketed newsletter label in tooling files signals accidental profile paste into the validation harness."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_NEWSLETTER_LINK_MARKDOWN not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+def test_profile_refresh_tagline_markdown_stays_out_of_tooling_and_lockfiles(rel_path):
+    """Bold hero tagline in package metadata or pip deps breaks install paths and hides paste regressions."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_TAGLINE_MARKDOWN not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_TOOLING_AND_LOCKFILE_SURFACES)
+@pytest.mark.parametrize("tagline", PROFILE_OFFERING_TAGLINES)
+def test_profile_refresh_offering_taglines_stay_out_of_tooling_and_lockfiles(rel_path, tagline):
+    """Product offering copy in requirements-dev.txt or package-lock confuses dependency resolution."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert tagline not in text
+
+
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
     "LICENSE",
     "CONTRIBUTING.md",
