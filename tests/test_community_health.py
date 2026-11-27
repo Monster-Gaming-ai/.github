@@ -1629,6 +1629,134 @@ def test_profile_refresh_offering_taglines_stay_out_of_tooling_and_lockfiles(rel
     assert tagline not in text
 
 
+PROFILE_VALIDATION_SUITE_SURFACES = (
+    "tests/test_ci_workflow.py",
+)
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_refresh_marketing_stays_out_of_validation_suite_modules(rel_path):
+    """4618966 paste into pytest modules can weaken or corrupt guards while CI still collects tests."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+
+    for claim in PROFILE_REFRESH_MARKETING_CLAIMS:
+        assert claim not in text, (
+            f"profile marketing claim must not appear in {rel_path}: {claim!r}"
+        )
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_canonical_intro_paragraph_stays_out_of_validation_suite_modules(rel_path):
+    """Full intro paste into a test module breaks assertion logic without tripping contributor guards."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PARAGRAPH not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+@pytest.mark.parametrize("install_command", PROFILE_SDK_INSTALL_COMMANDS)
+def test_profile_refresh_sdk_install_commands_stay_out_of_validation_suite_modules(
+    rel_path, install_command
+):
+    """SDK install one-liners in test sources invite mistaken executable examples in the validation gate."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert install_command not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_validation_suite_modules(rel_path, phrase):
+    """Intro routing copy in pytest sources corrupts guards without failing LICENSE substring checks."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert phrase not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_canonical_intro_prefix_stays_out_of_validation_suite_modules(rel_path):
+    """Partial intro paste into test modules evades full-paragraph guards on contributor paths."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PREFIX not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+@pytest.mark.parametrize("section_header", PROFILE_SECTION_HEADERS)
+def test_profile_refresh_section_headers_stay_out_of_validation_suite_modules(
+    rel_path, section_header
+):
+    """Profile markdown headings in pytest sources break docstrings and hide accidental README paste."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert section_header not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_refresh_luxedeum_footer_stays_out_of_validation_suite_modules(rel_path):
+    """Org footer paste into validation modules is a high blast-radius regression on the CI gate itself."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_LUXEDEUM_FOOTER not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_refresh_newsletter_link_markdown_stays_out_of_validation_suite_modules(rel_path):
+    """Bracketed newsletter label in pytest sources signals accidental profile Links paste."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_NEWSLETTER_LINK_MARKDOWN not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+def test_profile_refresh_tagline_markdown_stays_out_of_validation_suite_modules(rel_path):
+    """Bold hero tagline in test modules usually means profile README was pasted into the guard suite."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert PROFILE_TAGLINE_MARKDOWN not in text
+
+
+@pytest.mark.parametrize("rel_path", PROFILE_VALIDATION_SUITE_SURFACES)
+@pytest.mark.parametrize("tagline", PROFILE_OFFERING_TAGLINES)
+def test_profile_refresh_offering_taglines_stay_out_of_validation_suite_modules(rel_path, tagline):
+    """Product offering copy in pytest modules confuses which surface owns 4618966 marketing claims."""
+    text = (REPO_ROOT / rel_path).read_text(encoding="utf-8")
+    assert tagline not in text
+
+
+ISSUE_TEMPLATES_TEST_MODULE = "tests/test_issue_templates.py"
+
+
+def test_profile_canonical_intro_paragraph_stays_out_of_issue_templates_test_module():
+    """Issue-template tests cross-check the profile file — they must not embed the full intro paragraph."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PARAGRAPH not in text
+
+
+def test_profile_canonical_intro_prefix_stays_out_of_issue_templates_test_module():
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert PROFILE_CANONICAL_INTRO_PREFIX not in text
+
+
+def test_profile_refresh_luxedeum_footer_stays_out_of_issue_templates_test_module():
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert PROFILE_LUXEDEUM_FOOTER not in text
+
+
+def test_profile_refresh_tagline_markdown_stays_out_of_issue_templates_test_module():
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert PROFILE_TAGLINE_MARKDOWN not in text
+
+
+def test_profile_refresh_newsletter_link_markdown_stays_out_of_issue_templates_test_module():
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert PROFILE_NEWSLETTER_LINK_MARKDOWN not in text
+
+
+@pytest.mark.parametrize("tagline", PROFILE_OFFERING_TAGLINES)
+def test_profile_refresh_offering_taglines_stay_out_of_issue_templates_test_module(tagline):
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert tagline not in text
+
+
+@pytest.mark.parametrize("phrase", PROFILE_INTRO_PASTE_PHRASES)
+def test_profile_refresh_intro_paste_stays_out_of_issue_templates_test_module(phrase):
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert phrase not in text
+
+
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
     "LICENSE",
     "CONTRIBUTING.md",
