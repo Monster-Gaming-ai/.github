@@ -1757,6 +1757,55 @@ def test_profile_refresh_intro_paste_stays_out_of_issue_templates_test_module(ph
     assert phrase not in text
 
 
+ISSUE_TEMPLATES_TEST_LEGITIMATE_MARKETING_CLAIMS = frozenset(
+    {
+        "TypeScript / JavaScript",
+    }
+)
+
+
+def test_profile_refresh_marketing_stays_out_of_issue_templates_test_module():
+    """Bulk 4618966 marketing paste must not land in issue-template guards — except SDK language labels used in cross-checks."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+
+    for claim in PROFILE_REFRESH_MARKETING_CLAIMS:
+        if claim in ISSUE_TEMPLATES_TEST_LEGITIMATE_MARKETING_CLAIMS:
+            continue
+        assert claim not in text, (
+            f"profile marketing claim must not appear in {ISSUE_TEMPLATES_TEST_MODULE}: {claim!r}"
+        )
+
+
+@pytest.mark.parametrize("install_command", PROFILE_SDK_INSTALL_COMMANDS)
+def test_profile_refresh_sdk_install_commands_stay_out_of_issue_templates_test_module(
+    install_command,
+):
+    """SDK install one-liners in issue-template tests invite mistaken executable examples in the CI gate."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert install_command not in text
+
+
+def test_profile_refresh_what_we_build_header_stays_out_of_issue_templates_test_module():
+    """What We Build heading paste breaks issue-form module tone — Official SDKs/Links substrings are OK for profile reads."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert "## What We Build" not in text
+
+
+def test_profile_refresh_sdk_table_header_stays_out_of_issue_templates_test_module():
+    """Markdown SDK table header in test sources usually means the org profile table was pasted into guards."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert "| Language | Package | Install |" not in text
+
+
+@pytest.mark.parametrize("registry_url", PROFILE_SDK_REGISTRY_URLS)
+def test_profile_refresh_sdk_registry_urls_stay_out_of_issue_templates_test_module(
+    registry_url,
+):
+    """Package registry URLs belong in profile README — not embedded in issue-template validation logic."""
+    text = (REPO_ROOT / ISSUE_TEMPLATES_TEST_MODULE).read_text(encoding="utf-8")
+    assert registry_url not in text
+
+
 EXPECTED_COMMUNITY_HEALTH_PATHS = (
     "LICENSE",
     "CONTRIBUTING.md",
@@ -1825,6 +1874,11 @@ COMMUNITY_HEALTH_TEXT_PATHS = (
     "package.json",
     "package-lock.json",
     "test/issue-templates.test.mjs",
+    "tests/test_ci_workflow.py",
+    "tests/test_community_health.py",
+    "tests/test_issue_templates.py",
+    "tests/test_profile_readme.py",
+    "tests/test_profile_regression.py",
 )
 
 
